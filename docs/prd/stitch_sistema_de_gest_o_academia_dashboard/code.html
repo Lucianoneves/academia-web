@@ -1,0 +1,873 @@
+<!doctype html>
+<html class="dark" lang="pt-BR" style="">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta content="web_dashboard" name="shell-type" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+      rel="stylesheet"
+    />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      @layer base {
+        html,
+        body {
+          margin: 0;
+          padding: 0;
+        }
+        body {
+          overscroll-behavior: none;
+        }
+        main > :first-child {
+          margin-top: 0 !important;
+        }
+        main > :last-child {
+          margin-bottom: 0 !important;
+        }
+      }
+      ::-webkit-scrollbar {
+        display: none;
+      }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-fixed-dim": "#abd600",
+              "on-primary": "#283500",
+              "on-tertiary-fixed": "#2a1700",
+              "on-error": "#690005",
+              "on-secondary-fixed": "#002113",
+              "on-background": "#dfe2eb",
+              "on-secondary": "#003824",
+              "tertiary-fixed-dim": "#ffb95f",
+              "surface-container-lowest": "#0a0e14",
+              "inverse-on-surface": "#2d3137",
+              "secondary-container": "#00a572",
+              error: "#ffb4ab",
+              "on-tertiary-container": "#8d5900",
+              "surface-container-high": "#262a31",
+              "on-tertiary": "#472a00",
+              "inverse-surface": "#dfe2eb",
+              "surface-container-low": "#181c22",
+              "secondary-fixed": "#6ffbbe",
+              "primary-container": "#c3f400",
+              "on-primary-container": "#556d00",
+              "on-error-container": "#ffdad6",
+              primary: "#ffffff",
+              "surface-variant": "#31353c",
+              "surface-container": "#1c2026",
+              "on-primary-fixed": "#161e00",
+              "primary-fixed": "#c3f400",
+              "on-primary-fixed-variant": "#3c4d00",
+              background: "#10141a",
+              "surface-tint": "#abd600",
+              tertiary: "#ffffff",
+              "tertiary-fixed": "#ffddb8",
+              outline: "#8e9379",
+              "on-surface": "#dfe2eb",
+              "error-container": "#93000a",
+              "secondary-fixed-dim": "#4edea3",
+              "on-secondary-container": "#00311f",
+              "outline-variant": "#444933",
+              secondary: "#4edea3",
+              "on-surface-variant": "#c4c9ac",
+              "on-secondary-fixed-variant": "#005236",
+              "surface-bright": "#353940",
+              "tertiary-container": "#ffddb8",
+              "surface-container-highest": "#31353c",
+              "on-tertiary-fixed-variant": "#653e00",
+              "surface-dim": "#10141a",
+              surface: "#10141a",
+              "inverse-primary": "#506600",
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+            spacing: {
+              "space-lg": "1.25rem",
+              "space-md": "0.75rem",
+              "space-xl": "2rem",
+              "space-xs": "0.25rem",
+              gutter: "1rem",
+              "space-sm": "0.5rem",
+              margin: "1rem",
+            },
+            fontFamily: {
+              "headline-sm": ["Space Grotesk"],
+              "headline-lg": ["Space Grotesk"],
+              "body-sm": ["Plus Jakarta Sans"],
+              "headline-lg-mobile": ["Space Grotesk"],
+              "label-lg": ["Space Grotesk"],
+              "label-sm": ["Space Grotesk"],
+              "headline-xl": ["Space Grotesk"],
+              "body-md": ["Plus Jakarta Sans"],
+              "data-display": ["Space Grotesk"],
+              "label-md": ["Space Grotesk"],
+              "body-lg": ["Plus Jakarta Sans"],
+              "headline-xl-mobile": ["Space Grotesk"],
+              "headline-md": ["Space Grotesk"],
+            },
+            fontSize: {
+              "headline-sm": [
+                "16px",
+                {
+                  lineHeight: "22px",
+                  fontWeight: "600",
+                },
+              ],
+              "headline-lg": [
+                "28px",
+                {
+                  lineHeight: "36px",
+                  fontWeight: "700",
+                },
+              ],
+              "body-sm": [
+                "12px",
+                {
+                  lineHeight: "16px",
+                  fontWeight: "400",
+                },
+              ],
+              "headline-lg-mobile": [
+                "22px",
+                {
+                  lineHeight: "28px",
+                  fontWeight: "700",
+                },
+              ],
+              "label-lg": [
+                "14px",
+                {
+                  lineHeight: "18px",
+                  fontWeight: "600",
+                },
+              ],
+              "label-sm": [
+                "10px",
+                {
+                  lineHeight: "12px",
+                  fontWeight: "700",
+                },
+              ],
+              "headline-xl": [
+                "36px",
+                {
+                  lineHeight: "44px",
+                  fontWeight: "700",
+                },
+              ],
+              "body-md": [
+                "14px",
+                {
+                  lineHeight: "20px",
+                  fontWeight: "400",
+                },
+              ],
+              "data-display": [
+                "32px",
+                {
+                  lineHeight: "36px",
+                  fontWeight: "700",
+                },
+              ],
+              "label-md": [
+                "12px",
+                {
+                  lineHeight: "16px",
+                  fontWeight: "600",
+                },
+              ],
+              "body-lg": [
+                "16px",
+                {
+                  lineHeight: "24px",
+                  fontWeight: "400",
+                },
+              ],
+              "headline-xl-mobile": [
+                "28px",
+                {
+                  lineHeight: "34px",
+                  fontWeight: "700",
+                },
+              ],
+              "headline-md": [
+                "20px",
+                {
+                  lineHeight: "26px",
+                  fontWeight: "600",
+                },
+              ],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body
+    class="bg-background font-body-md text-body-md text-on-surface antialiased"
+  >
+    <aside
+      class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.4)]"
+    >
+      <div class="flex flex-col">
+        <div class="h-16 px-space-lg flex items-center justify-between">
+          <div class="flex items-center gap-space-sm">
+            <div
+              class="w-9 h-9 rounded-lg bg-primary-fixed flex items-center justify-center shadow-[0_0_16px_rgba(195,244,0,0.25)]"
+            >
+              <span
+                class="material-symbols-outlined text-on-primary-fixed font-bold text-[22px]"
+                >bolt</span
+              >
+            </div>
+            <div class="flex flex-col">
+              <span
+                class="font-headline-sm text-headline-sm tracking-wider uppercase text-on-surface font-bold"
+                >FITADMIN</span
+              ><span
+                class="font-label-sm text-label-sm tracking-widest text-primary-fixed uppercase font-bold"
+                >APEX.FIT ENGINE</span
+              >
+            </div>
+          </div>
+          <button
+            class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[20px]"
+              >keyboard_double_arrow_left</span
+            >
+          </button>
+        </div>
+        <div class="px-space-md pt-space-md">
+          <div
+            class="px-space-sm pb-space-xs font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant"
+          >
+            Gestão Operacional
+          </div>
+          <nav
+            class="flex flex-col gap-space-xs"
+            data-active-classes="bg-primary-fixed text-on-primary-fixed font-label-lg text-label-lg shadow-[0_0_16px_rgba(195,244,0,0.2)]"
+          >
+            <a
+              aria-current="page"
+              class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg transition-all bg-primary-fixed text-on-primary-fixed font-label-lg text-label-lg shadow-[0_0_16px_rgba(195,244,0,0.2)]"
+              data-path="dashboard"
+              href="#"
+              ><span class="material-symbols-outlined text-[20px]"
+                >grid_view</span
+              ><span class="">Dashboard</span></a
+            ><a
+              class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-lg text-label-lg transition-all"
+              data-path="total-de-alunos"
+              href="#"
+              ><span class="material-symbols-outlined text-[20px]">groups</span
+              ><span class="">Total de Alunos</span></a
+            ><a
+              class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-lg text-label-lg transition-all"
+              data-path="alunos-ativos-inativos"
+              href="#"
+              ><span class="material-symbols-outlined text-[20px]">badge</span
+              ><span class="">Alunos Ativos / Inativos</span></a
+            ><a
+              class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-lg text-label-lg transition-all"
+              data-path="pagamentos"
+              href="#"
+              ><span class="material-symbols-outlined text-[20px]"
+                >receipt_long</span
+              ><span class="">Pagamentos</span></a
+            ><a
+              class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-lg text-label-lg transition-all"
+              data-path="proximas-aulas-agendamentos"
+              href="#"
+              ><span class="material-symbols-outlined text-[20px]"
+                >event_available</span
+              ><span class="">Próximas Aulas</span></a
+            ><a
+              class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-lg text-label-lg transition-all"
+              data-path="avaliacoes-medicas"
+              href="#"
+              ><span class="material-symbols-outlined text-[20px]"
+                >cardiology</span
+              ><span class="">Avaliações Médicas</span></a
+            ><a
+              class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-lg text-label-lg transition-all"
+              data-path="resumo-financeiro"
+              href="#"
+              ><span class="material-symbols-outlined text-[20px]"
+                >query_stats</span
+              ><span class="">Resumo Financeiro</span></a
+            >
+          </nav>
+        </div>
+      </div>
+      <div class="p-space-md flex flex-col gap-space-sm">
+        <div
+          class="bg-surface-container-low p-space-md rounded-xl flex items-center justify-between"
+        >
+          <div class="flex items-center gap-space-sm">
+            <span
+              class="w-2.5 h-2.5 rounded-full bg-secondary-fixed animate-pulse"
+            ></span>
+            <div class="flex flex-col">
+              <span
+                class="font-label-sm text-label-sm uppercase text-on-surface-variant"
+                >Status Catracas</span
+              ><span class="font-label-md text-label-md text-on-surface"
+                >Online (4/4)</span
+              >
+            </div>
+          </div>
+          <span
+            class="material-symbols-outlined text-secondary-fixed text-[18px]"
+            >wifi_tethering</span
+          >
+        </div>
+      </div>
+    </aside>
+    <div class="pl-72">
+      <header
+        class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl z-40 px-space-lg flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.3)]"
+      >
+        <div class="flex items-center gap-space-md">
+          <div
+            class="flex items-center gap-space-sm bg-surface-container px-space-md py-space-xs rounded-lg cursor-pointer hover:bg-surface-container-high hover:text-on-surface transition-colors"
+          >
+            <span
+              class="material-symbols-outlined text-primary-fixed text-[18px]"
+              >storefront</span
+            ><span
+              class="font-label-md text-label-md text-on-surface font-semibold"
+              >Unidade Principal</span
+            ><span
+              class="material-symbols-outlined text-on-surface-variant text-[16px]"
+              >expand_more</span
+            >
+          </div>
+        </div>
+        <div class="flex items-center gap-space-md">
+          <button
+            class="h-9 px-space-md rounded-lg bg-surface-container-high hover:bg-surface-bright hover:text-on-surface text-on-surface flex items-center gap-space-xs font-label-md text-label-md transition-colors"
+            type="button"
+          >
+            <span
+              class="material-symbols-outlined text-primary-fixed text-[18px]"
+              >person_add</span
+            ><span class="hidden lg:inline">Novo Aluno</span>
+          </button>
+          <div class="relative">
+            <button
+              class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+              type="button"
+            >
+              <span class="material-symbols-outlined text-[20px]"
+                >notifications</span
+              ></button
+            ><span
+              class="absolute -top-1 -right-1 w-4 h-4 bg-primary-fixed rounded-full flex items-center justify-center font-label-sm text-label-sm text-on-primary-fixed font-bold"
+              >3</span
+            >
+          </div>
+          <div class="flex items-center gap-space-md pl-space-sm">
+            <div class="flex items-center gap-space-sm">
+              <div
+                class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"
+              >
+                <span
+                  class="material-symbols-outlined text-on-primary text-[18px]"
+                  >person</span
+                >
+              </div>
+              <div class="hidden xl:flex flex-col text-left">
+                <span
+                  class="font-label-md text-label-md text-on-surface font-semibold leading-tight"
+                  >Carlos Eduardo</span
+                ><span
+                  class="font-label-sm text-label-sm text-primary-fixed uppercase tracking-wider"
+                  >Administrador</span
+                >
+              </div>
+            </div>
+            <button
+              class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-error-container hover:text-on-error-container transition-colors"
+              title="Sair do Sistema"
+              type="button"
+            >
+              <span class="material-symbols-outlined text-[18px]">logout</span>
+            </button>
+          </div>
+        </div>
+      </header>
+      <main class="w-full pt-16 bg-background min-h-screen">
+        <div class="flex flex-col w-full p-space-lg gap-space-lg">
+          <div
+            class="flex flex-col md:flex-row md:items-end justify-between gap-space-md"
+          >
+            <div class="flex flex-col">
+              <div
+                class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm uppercase tracking-widest"
+              >
+                <span class="">Gestão Operacional</span>
+                <span class="">•</span>
+                <span class="text-primary-fixed">Visão em Tempo Real</span>
+              </div>
+              <div class="flex items-center gap-space-sm mt-space-xs">
+                <h1
+                  class="font-headline-lg text-headline-lg text-on-surface tracking-tight"
+                >
+                  Painel da Academia
+                </h1>
+                <span
+                  class="flex items-center gap-1.5 px-space-sm py-0.5 rounded-full bg-secondary-fixed/10 text-secondary-fixed font-label-sm text-label-sm"
+                >
+                  <span
+                    class="w-1.5 h-1.5 rounded-full bg-secondary-fixed animate-pulse"
+                  ></span>
+                  Turno Noite Ativo
+                </span>
+              </div>
+            </div>
+            <div class="flex items-center gap-space-sm">
+              <div
+                class="flex items-center gap-space-xs px-space-md py-space-xs rounded-lg bg-surface-container text-on-surface-variant font-label-md text-label-md"
+              >
+                <span class="material-symbols-outlined text-[18px]"
+                  >calendar_today</span
+                >
+                <span id="currentDateDisplay" class=""
+                  >Quinta-feira, 8 de out.</span
+                >
+              </div>
+              <button
+                class="h-9 px-space-md rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface flex items-center gap-space-xs font-label-md text-label-md transition-all active:scale-95 shadow-sm"
+                type="button"
+              >
+                <span
+                  class="material-symbols-outlined text-primary-fixed text-[18px]"
+                  >refresh</span
+                >
+                <span class="">Sincronizar</span>
+              </button>
+            </div>
+          </div>
+          <div
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md"
+          >
+            <div
+              class="p-space-lg rounded-xl bg-surface-container-low shadow-sm flex flex-col justify-between hover:bg-surface-container transition-colors"
+            >
+              <div class="flex items-center justify-between">
+                <span
+                  class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold"
+                  >Total de Alunos</span
+                >
+                <div
+                  class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary-fixed"
+                >
+                  <span class="material-symbols-outlined text-[20px]"
+                    >groups</span
+                  >
+                </div>
+              </div>
+              <div class="mt-space-md">
+                <div
+                  class="font-data-display text-data-display text-on-surface font-bold tracking-tight"
+                >
+                  420
+                </div>
+                <div
+                  class="text-secondary-fixed font-label-md text-label-md mt-1 flex items-center gap-1 font-semibold"
+                >
+                  <span class="material-symbols-outlined text-[16px]"
+                    >arrow_upward</span
+                  ><span class="">+12 este mês</span>
+                </div>
+              </div>
+            </div>
+            <div
+              class="p-space-lg rounded-xl bg-surface-container-low shadow-sm flex flex-col justify-between hover:bg-surface-container transition-colors"
+            >
+              <div class="flex items-center justify-between">
+                <span
+                  class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold"
+                  >Alunos Ativos</span
+                >
+                <div
+                  class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary-fixed"
+                >
+                  <span class="material-symbols-outlined text-[20px]"
+                    >badge</span
+                  >
+                </div>
+              </div>
+              <div class="mt-space-md">
+                <div
+                  class="font-data-display text-data-display text-on-surface font-bold tracking-tight"
+                >
+                  382
+                </div>
+                <div
+                  class="text-secondary-fixed font-label-md text-label-md mt-1 font-semibold"
+                >
+                  91% da base ativa
+                </div>
+              </div>
+            </div>
+            <div
+              class="p-space-lg rounded-xl bg-surface-container-low shadow-sm flex flex-col justify-between hover:bg-surface-container transition-colors"
+            >
+              <div class="flex items-center justify-between">
+                <span
+                  class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold"
+                  >Faturamento</span
+                >
+                <div
+                  class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary-fixed"
+                >
+                  <span class="material-symbols-outlined text-[20px]"
+                    >payments</span
+                  >
+                </div>
+              </div>
+              <div class="mt-space-md">
+                <div
+                  class="font-data-display text-data-display text-on-surface font-bold tracking-tight"
+                >
+                  R$ 54.200
+                </div>
+                <div
+                  class="text-on-surface-variant font-label-md text-label-md mt-1 font-medium"
+                >
+                  Meta: R$ 58.000
+                </div>
+              </div>
+            </div>
+            <div
+              class="p-space-lg rounded-xl bg-surface-container-low shadow-sm flex flex-col justify-between hover:bg-surface-container transition-colors"
+            >
+              <div class="flex items-center justify-between">
+                <span
+                  class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold"
+                  >Pagamentos Pendentes</span
+                >
+                <div
+                  class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-error"
+                >
+                  <span class="material-symbols-outlined text-[20px]"
+                    >warning</span
+                  >
+                </div>
+              </div>
+              <div class="mt-space-md">
+                <div
+                  class="font-data-display text-data-display text-error font-bold tracking-tight"
+                >
+                  19 alunos
+                </div>
+                <div
+                  class="text-error font-label-md text-label-md mt-1 font-semibold"
+                >
+                  R$ 4.830 em aberto
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-space-lg">
+            <div
+              class="p-space-lg rounded-xl bg-surface-container-low shadow-sm flex flex-col justify-between"
+            >
+              <div class="flex items-center justify-between pb-space-md">
+                <div class="flex items-center gap-space-sm">
+                  <div
+                    class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary-fixed"
+                  >
+                    <span class="material-symbols-outlined text-[20px]"
+                      >schedule</span
+                    >
+                  </div>
+                  <div>
+                    <h2
+                      class="font-headline-sm text-headline-sm text-on-surface font-bold"
+                    >
+                      Próximas Aulas
+                    </h2>
+                    <p
+                      class="font-body-sm text-body-sm text-on-surface-variant"
+                    >
+                      Grade selecionada de hoje
+                    </p>
+                  </div>
+                </div>
+                <button
+                  class="px-space-md py-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary-fixed font-label-sm text-label-sm transition-colors"
+                  type="button"
+                >
+                  Ver Grade
+                </button>
+              </div>
+              <div class="flex flex-col gap-space-sm">
+                <div
+                  class="p-space-md rounded-lg bg-surface-container flex items-center justify-between"
+                >
+                  <div class="flex items-center gap-space-md">
+                    <span
+                      class="font-headline-sm text-headline-sm font-bold text-primary-fixed w-16"
+                      >18:00</span
+                    >
+                    <div>
+                      <span
+                        class="font-label-lg text-label-lg text-on-surface font-bold block"
+                        >Hipertrofia &amp; Força</span
+                      ><span
+                        class="font-body-sm text-body-sm text-on-surface-variant"
+                        >Coach Rodrigo • Box 01</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-space-md">
+                    <span
+                      class="px-space-sm py-0.5 rounded-full font-label-sm text-label-sm bg-tertiary-fixed/15 text-tertiary-fixed-dim font-bold uppercase"
+                      >18 / 20 vagas</span
+                    >
+                  </div>
+                </div>
+                <div
+                  class="p-space-md rounded-lg bg-surface-container flex items-center justify-between"
+                >
+                  <div class="flex items-center gap-space-md">
+                    <span
+                      class="font-headline-sm text-headline-sm font-bold text-primary-fixed w-16"
+                      >19:00</span
+                    >
+                    <div>
+                      <span
+                        class="font-label-lg text-label-lg text-on-surface font-bold block"
+                        >Queima &amp; HIIT Funcional</span
+                      ><span
+                        class="font-body-sm text-body-sm text-on-surface-variant"
+                        >Coach Bia Lopes • Sala Cardio</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-space-md">
+                    <span
+                      class="px-space-sm py-0.5 rounded-full font-label-sm text-label-sm bg-error-container/40 text-error font-bold uppercase"
+                      >Lotado (25/25)</span
+                    >
+                  </div>
+                </div>
+                <div
+                  class="p-space-md rounded-lg bg-surface-container flex items-center justify-between"
+                >
+                  <div class="flex items-center gap-space-md">
+                    <span
+                      class="font-headline-sm text-headline-sm font-bold text-primary-fixed w-16"
+                      >20:00</span
+                    >
+                    <div>
+                      <span
+                        class="font-label-lg text-label-lg text-on-surface font-bold block"
+                        >Mobilidade &amp; Yoga</span
+                      ><span
+                        class="font-body-sm text-body-sm text-on-surface-variant"
+                        >Coach Camila • Studio Zen</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-space-md">
+                    <span
+                      class="px-space-sm py-0.5 rounded-full font-label-sm text-label-sm bg-secondary-fixed/10 text-secondary-fixed font-bold uppercase"
+                      >12 / 15 vagas</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-col gap-space-lg">
+              <div
+                class="p-space-lg rounded-xl bg-surface-container-low shadow-sm flex flex-col"
+              >
+                <div class="flex items-center justify-between pb-space-md">
+                  <div class="flex items-center gap-space-sm">
+                    <div
+                      class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-tertiary-fixed-dim"
+                    >
+                      <span class="material-symbols-outlined text-[20px]"
+                        >medical_services</span
+                      >
+                    </div>
+                    <div>
+                      <h2
+                        class="font-headline-sm text-headline-sm text-on-surface font-bold"
+                      >
+                        Avaliações Médicas
+                      </h2>
+                      <p
+                        class="font-body-sm text-body-sm text-on-surface-variant"
+                      >
+                        Atenção prioritária
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    class="px-space-md py-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm transition-colors"
+                    type="button"
+                  >
+                    Ver Todas (14)
+                  </button>
+                </div>
+                <div class="flex flex-col gap-space-sm">
+                  <div
+                    class="p-space-md rounded-lg bg-surface-container flex items-center justify-between"
+                  >
+                    <div class="flex items-center gap-space-md">
+                      <div
+                        class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface font-bold font-headline-sm"
+                      >
+                        JS
+                      </div>
+                      <div>
+                        <span
+                          class="font-label-lg text-label-lg text-on-surface font-bold block"
+                          >Juliana Silva</span
+                        ><span
+                          class="font-body-sm text-body-sm text-error font-medium"
+                          >Bioimpedância • Vence amanhã</span
+                        >
+                      </div>
+                    </div>
+                    <button
+                      class="px-space-sm py-1.5 rounded-lg bg-surface-container-high hover:bg-primary-fixed hover:text-on-primary-fixed text-on-surface font-label-sm text-label-sm transition-colors flex items-center gap-1"
+                      type="button"
+                    >
+                      <span class="material-symbols-outlined text-[14px]"
+                        >notifications_active</span
+                      ><span class="">Notificar</span>
+                    </button>
+                  </div>
+                  <div
+                    class="p-space-md rounded-lg bg-surface-container flex items-center justify-between"
+                  >
+                    <div class="flex items-center gap-space-md">
+                      <div
+                        class="w-9 h-9 rounded-lg bg-error-container/20 flex items-center justify-center text-error font-bold font-headline-sm"
+                      >
+                        RC
+                      </div>
+                      <div>
+                        <span
+                          class="font-label-lg text-label-lg text-on-surface font-bold block"
+                          >Rafael Costa</span
+                        ><span
+                          class="font-body-sm text-body-sm text-error font-medium"
+                          >Vencida há 1 dia (Bloqueado)</span
+                        >
+                      </div>
+                    </div>
+                    <button
+                      class="px-space-sm py-1.5 rounded-lg bg-error-container/30 hover:bg-error-container text-error hover:text-on-error font-label-sm text-label-sm transition-colors flex items-center gap-1"
+                      type="button"
+                    >
+                      <span class="material-symbols-outlined text-[14px]"
+                        >lock_open</span
+                      ><span class="">Liberar</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="p-space-lg rounded-xl bg-surface-container-low shadow-sm flex flex-col gap-space-md"
+              >
+                <div>
+                  <h2
+                    class="font-headline-sm text-headline-sm text-on-surface font-bold"
+                  >
+                    Ações Rápidas
+                  </h2>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">
+                    Operações essenciais imediatas
+                  </p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-space-sm">
+                  <button
+                    class="h-12 px-space-md rounded-lg bg-primary-fixed hover:bg-primary-fixed-dim text-on-primary-fixed font-label-lg text-label-lg font-bold flex items-center justify-center gap-2 transition-transform active:scale-[0.98] shadow-sm"
+                    type="button"
+                  >
+                    <span class="material-symbols-outlined text-[20px]"
+                      >person_add</span
+                    ><span class="">Nova Matrícula</span></button
+                  ><button
+                    class="h-12 px-space-md rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-lg text-label-lg flex items-center justify-center gap-2 transition-colors"
+                    type="button"
+                  >
+                    <span
+                      class="material-symbols-outlined text-secondary-fixed text-[20px]"
+                      >add_card</span
+                    ><span class="">Lançar Pagamento</span></button
+                  ><button
+                    class="h-12 px-space-md rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-lg text-label-lg flex items-center justify-center gap-2 transition-colors"
+                    type="button"
+                  >
+                    <span
+                      class="material-symbols-outlined text-primary-fixed text-[20px]"
+                      >sensor_door</span
+                    ><span class="">Liberar Catraca</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="p-space-md rounded-xl bg-surface-container-low shadow-sm flex flex-col md:flex-row items-center justify-between gap-space-md text-on-surface-variant"
+          >
+            <div class="flex items-center gap-space-md">
+              <div class="w-2.5 h-2.5 rounded-full bg-secondary-fixed"></div>
+              <span class="font-body-sm text-body-sm"
+                >Catracas operando em sincronia local • Último check-in há 2
+                minutos (Lucas R.)</span
+              >
+            </div>
+            <div
+              class="flex items-center gap-space-lg text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider"
+            >
+              <span class="">Capacidade total: 600 alunos</span>
+              <span class="">•</span>
+              <span class="">Versão do Motor: APEX v2.4</span>
+            </div>
+          </div>
+        </div>
+        <script>
+          (function () {
+            const today = new Date();
+            const options = { weekday: "long", day: "numeric", month: "short" };
+            const dateFormatted = today.toLocaleDateString("pt-BR", options);
+            const dateEl = document.getElementById("currentDateDisplay");
+            if (dateEl) {
+              dateEl.textContent =
+                dateFormatted.charAt(0).toUpperCase() + dateFormatted.slice(1);
+            }
+          })();
+        </script>
+      </main>
+    </div>
+  </body>
+</html>
