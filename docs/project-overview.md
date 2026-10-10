@@ -8,19 +8,22 @@
 
 ## O que o código entrega hoje
 
-Recorte **UI estática / protótipo navegável**, sem persistência nem API:
+O acesso do administrador, o cadastro de aluno e a lista com ficha já gravam no Supabase. O aluno leva nome, nascimento, telefone, peso, altura, plano escolhido e restrições. No dashboard, total, ativos, porcentagem e entradas do mês vêm dos alunos. Faturamento, pagamentos pendentes, aulas, avaliações e catracas continuam ilustrativos.
 
-| Rota      | Função                                                                                                                |
-| --------- | --------------------------------------------------------------------------------------------------------------------- |
-| `/`       | Formulário de cadastro do primeiro administrador (campos validados no HTML; submit não persiste dados).               |
-| `/login`  | Login com e-mail e senha; ao enviar, redireciona para `/painel` sem validar credenciais.                              |
-| `/painel` | Dashboard com menu lateral, métricas, aulas do dia e atalhos — **dados fixos no componente**, não vindos de servidor. |
+| Rota                  | Função                                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------------------- |
+| `/`                   | Cadastro do primeiro administrador. Depois que a conta existe, abre o login.                            |
+| `/login`              | Login com e-mail e senha. Sem sessão válida, o painel não abre.                                         |
+| `/painel`             | Dashboard. Total, ativos, porcentagem e entradas do mês vêm dos alunos. O cabeçalho mostra quem entrou. |
+| `/painel/alunos`      | Lista aberta por **Alunos Ativos / Inativos**. Busca por nome ou telefone.                              |
+| `/painel/alunos/novo` | Formulário de novo aluno. Grava, avisa e permanece na página.                                           |
+| `/painel/alunos/[id]` | Ficha para editar, inativar e reativar.                                                                 |
 
-Itens de menu do painel (alunos, pagamentos, agenda, etc.) apontam para âncoras (`#alunos`, `#pagamentos`, …) ou permanecem como layout; **não há páginas separadas** para essas áreas no App Router.
+**Novo Aluno** e **Alunos Ativos / Inativos** navegam. Os outros itens do menu continuam âncoras da própria tela. **Nova Matrícula** ainda não navega.
 
 ## Visão de produto (referência)
 
-O escopo completo de negócio (alunos, planos, pagamentos em dinheiro, horários, agenda, categorias, avaliação médica, persistência entre sessões) está descrito em [docs/prd/painel-administrador.md](./prd/painel-administrador.md). Esse PRD marca status **Implementado** no documento; no repositório atual, apenas as telas de acesso e o dashboard visual correspondem a essa visão — integração com backend e demais fluxos ainda não existem no código.
+O escopo completo de negócio está em [docs/prd/painel-administrador.md](./prd/painel-administrador.md). O recorte já entregue está em [docs/prd/feature-cadastro-aluno.md](./prd/feature-cadastro-aluno.md): acesso, inclusão, lista, ficha, edição e inativação.
 
 ## Público da documentação
 

@@ -1,6 +1,6 @@
 # academia-web (APEX.FIT — Admin Console)
 
-Front-end Next.js do painel administrativo da academia (**APEX.FIT** / FITADMIN). Hoje inclui cadastro e login de administrador (UI) e um dashboard com layout completo e dados de demonstração.
+Front-end Next.js do painel administrativo da academia (**APEX.FIT** / FITADMIN). O administrador entra, cadastra aluno e abre a lista com ficha. No dashboard, total e ativos vêm dos alunos; faturamento, aulas e avaliações continuam de demonstração.
 
 Documentação mantida pela skill `/documentation-writer`:
 
@@ -23,11 +23,14 @@ npm run dev
 
 Abra [http://localhost:3000](http://localhost:3000).
 
-| URL       | Tela                                                     |
-| --------- | -------------------------------------------------------- |
-| `/`       | Cadastro do administrador                                |
-| `/login`  | Login (redireciona para o painel ao enviar o formulário) |
-| `/painel` | Dashboard                                                |
+| URL                   | Tela                                                |
+| --------------------- | --------------------------------------------------- |
+| `/`                   | Cadastro do primeiro administrador                  |
+| `/login`              | Login do administrador                              |
+| `/painel`             | Dashboard com sessão; total e ativos vêm dos alunos |
+| `/painel/alunos`      | Lista: busca e filtro de ativos ou inativos         |
+| `/painel/alunos/novo` | Cadastro de aluno                                   |
+| `/painel/alunos/[id]` | Ficha: edita, inativa e reativa                     |
 
 ## Scripts
 
@@ -40,8 +43,10 @@ Abra [http://localhost:3000](http://localhost:3000).
 ## Estrutura rápida
 
 - `src/app/` — rotas App Router
+- `src/proxy.ts` — exige sessão para abrir o painel
 - `src/components/acesso/` — formulários de cadastro e login
-- `src/components/painel/` — dashboard e utilitários de UI
+- `src/components/painel/` — dashboard e casca do painel
+- `supabase/` — SQL das tabelas, funções e RLS
 - `docs/` — documentação e PRDs
 
 Import alias: `@/*` → `src/*` (ver `tsconfig.json`).
@@ -52,4 +57,4 @@ O arquivo [AGENTS.md](./AGENTS.md) na raiz contém avisos gerados pelo `next dev
 
 ## Estado atual (importante)
 
-Não há backend integrado, banco de dados nem autenticação real. Formulários não persistem dados; o painel usa conteúdo estático no componente `Dashboard`. Evoluir funcionalidades deve seguir o [PRD](docs/prd/painel-administrador.md) e atualizar a documentação em `docs/` quando o comportamento mudar.
+Autenticação e alunos usam o Supabase configurado no ambiente (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` só no servidor). O SQL está em `supabase/`. Se a ficha não gravar altura e plano, aplique `supabase/11_students_altura_plano.sql` no editor SQL. Faturamento, pagamentos pendentes, aulas, avaliações, catracas e **Nova Matrícula** continuam ilustrativos. O comportamento deste recorte está em [docs/prd/feature-cadastro-aluno.md](docs/prd/feature-cadastro-aluno.md).
