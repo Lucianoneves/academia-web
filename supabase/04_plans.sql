@@ -34,11 +34,11 @@ comment on column public.plans.duration_days is
 
 insert into public.plans (id, kind, duration_days, duration_label, price_cents, active)
 values
-  ('a0000000-0000-4000-8000-000000000001', 'avulso', null, '1 aula', 0, true),
-  ('a0000000-0000-4000-8000-000000000002', 'mensal', 30, '30 dias', 0, true),
-  ('a0000000-0000-4000-8000-000000000003', 'trimestral', 90, '90 dias', 0, true),
-  ('a0000000-0000-4000-8000-000000000004', 'semestral', 180, '180 dias', 0, true),
-  ('a0000000-0000-4000-8000-000000000005', 'anual', 365, '365 dias', 0, true);
+  ('a0000000-0000-4000-8000-000000000001', 'avulso', null, '1 aula', 4000, true),
+  ('a0000000-0000-4000-8000-000000000002', 'mensal', 30, '30 dias', 15000, true),
+  ('a0000000-0000-4000-8000-000000000003', 'trimestral', 90, '90 dias', 40000, true),
+  ('a0000000-0000-4000-8000-000000000004', 'semestral', 180, '180 dias', 72000, true),
+  ('a0000000-0000-4000-8000-000000000005', 'anual', 365, '365 dias', 120000, true);
 
 create or replace function private.plans_guard()
 returns trigger

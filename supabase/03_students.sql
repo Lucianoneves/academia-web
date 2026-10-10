@@ -9,11 +9,18 @@ create table public.students (
   phone text not null,
   phone_digits text generated always as (regexp_replace(phone, '\D', '', 'g')) stored,
   weight_kg numeric(5, 1) not null,
+  height_cm numeric(5, 1),
+  chosen_plan text,
   medical_restrictions text,
   active boolean not null default true,
   created_at timestamptz not null default pg_catalog.now(),
   constraint students_name_check check (char_length(btrim(name)) >= 2),
   constraint students_weight_check check (weight_kg > 0),
+  constraint students_height_check check (height_cm is null or height_cm > 0),
+  constraint students_chosen_plan_check check (
+    chosen_plan is null
+    or chosen_plan in ('avulso', 'mensal', 'trimestral', 'semestral', 'anual')
+  ),
   constraint students_phone_shape_check check (
     phone !~ '[[:alpha:]]'
     and regexp_replace(phone, '\D', '', 'g') ~ '^[0-9]{10,11}$'
@@ -30,6 +37,12 @@ comment on table public.students is
   'Alunos da academia. phone_digits guarda só os números, para a unicidade.';
 
 comment on column public.students.weight_kg is 'Peso em quilogramas, com uma casa decimal.';
+
+comment on column public.students.height_cm is
+  'Altura em centímetros, com uma casa decimal. Nula só em aluno gravado antes do campo.';
+
+comment on column public.students.chosen_plan is
+  'Plano escolhido no cadastro. Não é o plano vigente, que nasce do pagamento.';
 
 comment on column public.students.medical_restrictions is
   'Opcional. Vazio na aplicação aparece como nenhuma.';

@@ -1,6 +1,37 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { connection } from "next/server";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { CadastroAdministrador } from "@/components/acesso/cadastro-administrador";
+import { CarregandoAcesso } from "@/components/acesso/carregando-acesso";
+import { administradorExiste } from "@/lib/auth";
+
+export const metadata: Metadata = {
+  title: "APEX.FIT — Cadastro do administrador",
+};
 
 export default function Home() {
+  return (
+    <Suspense fallback={<CarregandoAcesso titulo="Preparando o acesso" />}>
+      <Entrada />
+    </Suspense>
+  );
+}
+
+async function Entrada() {
+  await connection();
+
+  try {
+    if (await administradorExiste()) {
+      redirect("/login");
+    }
+  } catch (error) {
+    unstable_rethrow(error);
+    return (
+      <CarregandoAcesso titulo="Não foi possível verificar o cadastro. Atualize a página." />
+    );
+  }
+
   return (
     <>
       <header className="fixed top-0 z-50 w-full bg-surface/80 shadow-[0_1px_8px_rgba(0,0,0,0.04)] backdrop-blur-xl">

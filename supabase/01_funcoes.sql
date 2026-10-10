@@ -108,7 +108,8 @@ begin
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('academia.first_admin'));
 
   delete from private.first_admin_claim
-  where not exists (select 1 from public.administrators)
+  where id = true
+    and not exists (select 1 from public.administrators)
     and claimed_at < pg_catalog.now() - interval '15 minutes';
 
   if exists (select 1 from public.administrators) then
@@ -138,7 +139,7 @@ begin
     raise exception 'já existe administrador';
   end if;
 
-  delete from private.first_admin_claim;
+  delete from private.first_admin_claim where id = true;
 end;
 $$;
 

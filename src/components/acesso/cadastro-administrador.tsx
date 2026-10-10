@@ -1,18 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useActionState, useState, useTransition, type FormEvent } from "react";
+import { criarAdministrador } from "@/app/_actions/criar-administrador";
+import type { FormState } from "@/lib/validacao";
+
+const initialState: FormState = { success: false };
 
 function PasswordField({
   id,
   label,
   placeholder,
   icon,
+  error,
 }: {
   id: string;
   label: string;
   placeholder: string;
   icon: string;
+  error?: string;
 }) {
   const [visible, setVisible] = useState(false);
 
@@ -49,16 +55,35 @@ function PasswordField({
           </span>
         </button>
       </div>
+      {error ? (
+        <p className="font-body-sm text-body-sm text-error" role="alert">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
 
 export function CadastroAdministrador() {
+  const [state, action] = useActionState(criarAdministrador, initialState);
+  const [pending, startTransition] = useTransition();
+  const erro = (campo: string) => state.errors?.[campo]?.[0];
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    startTransition(() => {
+      action(data);
+    });
+  }
+
   return (
-    <form
-      className="flex flex-col gap-space-lg"
-      onSubmit={(event) => event.preventDefault()}
-    >
+    <form onSubmit={onSubmit} className="flex flex-col gap-space-lg">
+      {state.message ? (
+        <p className="font-body-md text-body-md text-error" role="alert">
+          {state.message}
+        </p>
+      ) : null}
       <div className="grid grid-cols-1 gap-space-md md:grid-cols-2">
         <div className="flex flex-col gap-2">
           <label
@@ -82,6 +107,11 @@ export function CadastroAdministrador() {
               className="w-full rounded-lg bg-surface-container py-3 pr-4 pl-10 font-body-md text-body-md text-primary shadow-inner transition-colors placeholder:text-outline focus:bg-surface-container-high focus:text-primary focus:outline-none"
             />
           </div>
+          {erro("nome") ? (
+            <p className="font-body-sm text-body-sm text-error" role="alert">
+              {erro("nome")}
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-col gap-2">
           <label
@@ -105,6 +135,11 @@ export function CadastroAdministrador() {
               className="w-full rounded-lg bg-surface-container py-3 pr-4 pl-10 font-body-md text-body-md text-primary shadow-inner transition-colors placeholder:text-outline focus:bg-surface-container-high focus:outline-none"
             />
           </div>
+          {erro("email") ? (
+            <p className="font-body-sm text-body-sm text-error" role="alert">
+              {erro("email")}
+            </p>
+          ) : null}
         </div>
       </div>
 
@@ -114,21 +149,24 @@ export function CadastroAdministrador() {
           label="Senha"
           placeholder="Sua senha"
           icon="key"
+          error={erro("senha")}
         />
         <PasswordField
           id="confirmacao"
           label="Confirmação de Senha"
           placeholder="Confirme sua senha"
           icon="lock_reset"
+          error={erro("confirmacao")}
         />
       </div>
 
       <div className="flex flex-col gap-space-md pt-space-xs">
         <button
           type="submit"
-          className="flex h-14 w-full items-center justify-center gap-3 rounded-xl bg-primary-container font-headline-sm text-headline-sm tracking-wider text-on-primary-container uppercase shadow-lg transition-all hover:bg-primary-fixed-dim hover:shadow-primary-container/20 active:scale-[0.98]"
+          disabled={pending}
+          className="flex h-14 w-full items-center justify-center gap-3 rounded-xl bg-primary-container font-headline-sm text-headline-sm tracking-wider text-on-primary-container uppercase shadow-lg transition-all hover:bg-primary-fixed-dim hover:shadow-primary-container/20 active:scale-[0.98] disabled:cursor-wait disabled:opacity-70"
         >
-          <span>Cadastrar Administrador</span>
+          <span>{pending ? "Salvando..." : "Cadastrar Administrador"}</span>
           <span className="material-symbols-outlined text-2xl font-bold">
             arrow_forward
           </span>

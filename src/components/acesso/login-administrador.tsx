@@ -1,11 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useActionState, useState, useTransition, type FormEvent } from "react";
+import { entrar } from "@/app/login/_actions/entrar";
+import type { FormState } from "@/lib/validacao";
 
-export function LoginAdministrador() {
-  const router = useRouter();
+const initialState: FormState = { success: false };
+
+const avisos: Record<string, string> = {
+  conta: "Já existe um administrador. Entre com e-mail e senha.",
+  entrar: "Sua conta foi criada. Entre com e-mail e senha.",
+};
+
+export function LoginAdministrador({
+  aviso,
+  mostrarCadastro,
+}: {
+  aviso?: string;
+  mostrarCadastro: boolean;
+}) {
+  const [state, action] = useActionState(entrar, initialState);
+  const [pending, startTransition] = useTransition();
   const [visible, setVisible] = useState(false);
   const [remember, setRemember] = useState(true);
   const [sessionVisible, setSessionVisible] = useState(true);
@@ -70,11 +85,27 @@ export function LoginAdministrador() {
 
           <form
             className="flex flex-col gap-space-lg"
-            onSubmit={(event) => {
+            onSubmit={(event: FormEvent<HTMLFormElement>) => {
               event.preventDefault();
-              router.push("/painel");
+              const data = new FormData(event.currentTarget);
+              startTransition(() => {
+                action(data);
+              });
             }}
           >
+            {aviso && avisos[aviso] ? (
+              <p
+                className="font-body-md text-body-md text-on-surface"
+                role="status"
+              >
+                {avisos[aviso]}
+              </p>
+            ) : null}
+            {state.message ? (
+              <p className="font-body-md text-body-md text-error" role="alert">
+                {state.message}
+              </p>
+            ) : null}
             <div className="flex flex-col gap-space-xs">
               <label
                 className="flex items-center justify-between font-label-md text-label-md tracking-wider text-on-surface uppercase"
@@ -102,6 +133,14 @@ export function LoginAdministrador() {
                   className="h-12 w-full rounded-lg bg-surface-container-low pr-4 pl-11 font-body-md text-body-md text-on-surface transition-colors placeholder:text-on-surface-variant/50 focus:bg-surface-container-highest focus:outline-none"
                 />
               </div>
+              {state.errors?.email?.[0] ? (
+                <p
+                  className="font-body-sm text-body-sm text-error"
+                  role="alert"
+                >
+                  {state.errors.email[0]}
+                </p>
+              ) : null}
             </div>
 
             <div className="flex flex-col gap-space-xs">
@@ -143,6 +182,14 @@ export function LoginAdministrador() {
                   </span>
                 </button>
               </div>
+              {state.errors?.senha?.[0] ? (
+                <p
+                  className="font-body-sm text-body-sm text-error"
+                  role="alert"
+                >
+                  {state.errors.senha[0]}
+                </p>
+              ) : null}
             </div>
 
             <div className="flex items-center gap-space-sm pt-space-xs">
@@ -170,27 +217,30 @@ export function LoginAdministrador() {
 
             <button
               type="submit"
-              className="mt-space-xs flex h-[52px] w-full items-center justify-center gap-space-sm rounded-lg bg-primary-fixed font-headline-sm text-headline-sm tracking-wide text-surface shadow-md transition-all hover:bg-primary-fixed-dim active:scale-[0.99]"
+              disabled={pending}
+              className="mt-space-xs flex h-[52px] w-full items-center justify-center gap-space-sm rounded-lg bg-primary-fixed font-headline-sm text-headline-sm tracking-wide text-surface shadow-md transition-all hover:bg-primary-fixed-dim active:scale-[0.99] disabled:cursor-wait disabled:opacity-70"
             >
-              <span>ENTRAR NO SISTEMA</span>
+              <span>{pending ? "ENTRANDO..." : "ENTRAR NO SISTEMA"}</span>
               <span className="material-symbols-outlined text-[22px]">
                 arrow_forward
               </span>
             </button>
           </form>
 
-          <div className="mt-space-lg flex flex-col items-center gap-space-sm pt-space-xl">
-            <div className="h-px w-full bg-surface-container-highest" />
-            <div className="flex items-center justify-center gap-1 pt-space-xs font-body-sm text-body-sm text-on-surface-variant">
-              <span>Não tem uma conta corporativa?</span>
-              <Link
-                className="ml-1 inline-flex items-center gap-0.5 font-headline-sm text-headline-sm text-primary-fixed transition-colors hover:text-primary-fixed-dim"
-                href="/"
-              >
-                Fazer Cadastro
-              </Link>
+          {mostrarCadastro ? (
+            <div className="mt-space-lg flex flex-col items-center gap-space-sm pt-space-xl">
+              <div className="h-px w-full bg-surface-container-highest" />
+              <div className="flex items-center justify-center gap-1 pt-space-xs font-body-sm text-body-sm text-on-surface-variant">
+                <span>Não tem uma conta corporativa?</span>
+                <Link
+                  className="ml-1 inline-flex items-center gap-0.5 font-headline-sm text-headline-sm text-primary-fixed transition-colors hover:text-primary-fixed-dim"
+                  href="/"
+                >
+                  Fazer Cadastro
+                </Link>
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
 
         <div className="flex items-center justify-between px-space-xs font-label-sm text-label-sm tracking-widest text-on-surface-variant uppercase">
