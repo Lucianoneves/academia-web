@@ -16,7 +16,7 @@ export async function listarPlanos(): Promise<
   const supabase = await createSessionClient();
   const { data, error } = await supabase
     .from("plans")
-    .select("id, kind, duration_label, price_cents, active");
+    .select("id, kind, price_cents, active");
 
   if (error) {
     return { ok: false, erro: "Não foi possível carregar os planos." };
@@ -32,7 +32,7 @@ export async function listarPlanos(): Promise<
       id: plano.id,
       kind: conhecido.value,
       nome: conhecido.label,
-      duracao: plano.duration_label,
+      duracao: conhecido.duracao,
       precoCentavos: plano.price_cents,
       ativo: plano.active,
     });

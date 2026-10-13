@@ -17,10 +17,10 @@ create table public.plans (
   constraint plans_price_check check (price_cents >= 0),
   constraint plans_duration_check check (
     (kind = 'avulso' and duration_days is null and duration_label = '1 aula')
-    or (kind = 'mensal' and duration_days = 30 and duration_label = '30 dias')
-    or (kind = 'trimestral' and duration_days = 90 and duration_label = '90 dias')
-    or (kind = 'semestral' and duration_days = 180 and duration_label = '180 dias')
-    or (kind = 'anual' and duration_days = 365 and duration_label = '365 dias')
+    or (kind = 'mensal' and duration_days = 30 and duration_label = '1 mês, até a véspera do mesmo dia')
+    or (kind = 'trimestral' and duration_days = 90 and duration_label = '3 meses, até a véspera do mesmo dia')
+    or (kind = 'semestral' and duration_days = 180 and duration_label = '6 meses, até a véspera do mesmo dia')
+    or (kind = 'anual' and duration_days = 365 and duration_label = '1 ano, até a véspera do mesmo dia')
   )
 );
 
@@ -30,15 +30,15 @@ comment on table public.plans is
 comment on column public.plans.price_cents is 'Preço em centavos de real.';
 
 comment on column public.plans.duration_days is
-  'Dias corridos do plano com prazo. Nulo no avulso, que vale 1 aula.';
+  'Não entra na cobertura. O prazo cobre 1, 3, 6 ou 12 meses de calendário, até a véspera do mesmo dia. Nulo no avulso, que vale 1 aula.';
 
 insert into public.plans (id, kind, duration_days, duration_label, price_cents, active)
 values
   ('a0000000-0000-4000-8000-000000000001', 'avulso', null, '1 aula', 4000, true),
-  ('a0000000-0000-4000-8000-000000000002', 'mensal', 30, '30 dias', 15000, true),
-  ('a0000000-0000-4000-8000-000000000003', 'trimestral', 90, '90 dias', 40000, true),
-  ('a0000000-0000-4000-8000-000000000004', 'semestral', 180, '180 dias', 72000, true),
-  ('a0000000-0000-4000-8000-000000000005', 'anual', 365, '365 dias', 120000, true);
+  ('a0000000-0000-4000-8000-000000000002', 'mensal', 30, '1 mês, até a véspera do mesmo dia', 15000, true),
+  ('a0000000-0000-4000-8000-000000000003', 'trimestral', 90, '3 meses, até a véspera do mesmo dia', 40000, true),
+  ('a0000000-0000-4000-8000-000000000004', 'semestral', 180, '6 meses, até a véspera do mesmo dia', 72000, true),
+  ('a0000000-0000-4000-8000-000000000005', 'anual', 365, '1 ano, até a véspera do mesmo dia', 120000, true);
 
 create or replace function private.plans_guard()
 returns trigger

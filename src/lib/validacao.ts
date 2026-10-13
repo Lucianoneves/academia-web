@@ -55,11 +55,27 @@ export const administradorSchema = z
   });
 
 export const planosCadastro = [
-  { value: "avulso", label: "Avulso" },
-  { value: "mensal", label: "Mensal" },
-  { value: "trimestral", label: "Trimestral" },
-  { value: "semestral", label: "Semestral" },
-  { value: "anual", label: "Anual" },
+  { value: "avulso", label: "Avulso", duracao: "1 aula" },
+  {
+    value: "mensal",
+    label: "Mensal",
+    duracao: "1 mês, até a véspera do mesmo dia",
+  },
+  {
+    value: "trimestral",
+    label: "Trimestral",
+    duracao: "3 meses, até a véspera do mesmo dia",
+  },
+  {
+    value: "semestral",
+    label: "Semestral",
+    duracao: "6 meses, até a véspera do mesmo dia",
+  },
+  {
+    value: "anual",
+    label: "Anual",
+    duracao: "1 ano, até a véspera do mesmo dia",
+  },
 ] as const;
 
 const planoCadastro = z.enum(
@@ -76,6 +92,38 @@ export const loginSchema = z.object({
   senha: z.string().min(1, "Informe a senha."),
 });
 
+const alturaEmMetros = /^\d([.,]\d{1,2})?$/;
+const mensagemAltura = "Informe a altura em metros, como 1.60.";
+
+function metrosParaCentimetros(value: string) {
+  return Math.round(Number(value.replace(",", ".")) * 100);
+}
+
+export function formatarAltura(centimetros: number) {
+  return (centimetros / 100).toFixed(2);
+}
+
+const alturaObrigatoria = z
+  .string()
+  .trim()
+  .min(1, "Informe a altura.")
+  .refine((value) => alturaEmMetros.test(value), { message: mensagemAltura })
+  .transform(metrosParaCentimetros)
+  .refine((value) => value > 0, {
+    message: "A altura precisa ser maior que zero.",
+  });
+
+const alturaOpcional = z
+  .string()
+  .trim()
+  .refine((value) => value === "" || alturaEmMetros.test(value), {
+    message: mensagemAltura,
+  })
+  .transform((value) => (value === "" ? null : metrosParaCentimetros(value)))
+  .refine((value) => value === null || value > 0, {
+    message: "A altura precisa ser maior que zero.",
+  });
+
 export const alunoSchema = z.object({
   nome: z.string().trim().min(2, "O nome precisa ter pelo menos 2 caracteres."),
   nascimento: z
@@ -89,12 +137,13 @@ export const alunoSchema = z.object({
     .string()
     .trim()
     .min(1, "Informe o telefone.")
+    .max(13, "O telefone pode ter no máximo 13 caracteres.")
     .refine((value) => !/[\p{L}]/u.test(value), {
       message: "O telefone não pode ter letras.",
     })
     .transform((value) => value.replace(/\D/g, ""))
-    .refine((value) => /^[0-9]{10,11}$/.test(value), {
-      message: "Informe o DDD e o número, com 10 ou 11 dígitos.",
+    .refine((value) => /^[0-9]{11}$/.test(value), {
+      message: "Informe o DDD e o número, com 10 ou 11 dígitos no total.",
     }),
   peso: z
     .string()
@@ -107,34 +156,13 @@ export const alunoSchema = z.object({
     .refine((value) => value > 0, {
       message: "O peso precisa ser maior que zero.",
     }),
-  altura: z
-    .string()
-    .trim()
-    .min(1, "Informe a altura.")
-    .refine((value) => /^\d{1,3}([.,]\d)?$/.test(value), {
-      message: "Informe a altura em cm, com no máximo uma casa decimal.",
-    })
-    .transform((value) => Number(value.replace(",", ".")))
-    .refine((value) => value > 0, {
-      message: "A altura precisa ser maior que zero.",
-    }),
+  altura: alturaObrigatoria,
   plano: planoCadastro,
   restricoes: z
     .string()
     .trim()
     .transform((value) => (value.length > 0 ? value : null)),
 });
-
-const alturaOpcional = z
-  .string()
-  .trim()
-  .refine((value) => value === "" || /^\d{1,3}([.,]\d)?$/.test(value), {
-    message: "Informe a altura em cm, com no máximo uma casa decimal.",
-  })
-  .transform((value) => (value === "" ? null : Number(value.replace(",", "."))))
-  .refine((value) => value === null || value > 0, {
-    message: "A altura precisa ser maior que zero.",
-  });
 
 const planoOpcional = z
   .string()
@@ -179,6 +207,46 @@ function centavos(mensagemVazio: string) {
 
 export const precoPlanoSchema = z.object({
   preco: centavos("Informe o preço."),
+});
+
+const horaCampo = (mensagem: string) =>
+  z
+    .string()
+    .trim()
+    .regex(/^\d{2}:\d{2}$/, mensagem);
+
+export const horarioSchema = z
+  .object({
+    dia: z
+      .string()
+      .trim()
+      .regex(/^[0-6]$/, "Selecione o dia.")
+      .transform(Number),
+    inicio: horaCampo("Informe o início."),
+    fim: horaCampo("Informe o fim."),
+    categoria: idCampo("Selecione a categoria."),
+    vagas: z
+      .string()
+      .trim()
+      .regex(/^\d+$/, "Informe as vagas em número inteiro.")
+      .transform(Number)
+      .refine((valor) => valor >= 1, "Informe pelo menos 1 vaga."),
+  })
+  .refine((valor) => valor.fim > valor.inicio, {
+    path: ["fim"],
+    message: "O fim precisa ser depois do início.",
+  });
+
+export const marcacaoSchema = z.object({
+  aluno: idCampo("Selecione o aluno."),
+  horario: idCampo("Selecione o horário."),
+  data: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Informe a data.")
+    .refine((valor) => valor >= hojeSaoPaulo(), {
+      message: "Não é possível agendar em data passada.",
+    }),
 });
 
 export const lancamentoSchema = z.object({

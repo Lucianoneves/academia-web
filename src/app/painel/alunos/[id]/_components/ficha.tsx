@@ -13,8 +13,13 @@ import {
 import { alterarSituacao, atualizarAluno } from "../_actions/atualizar-aluno";
 import { HistoricoPagamento } from "@/components/painel/historico-pagamento";
 import type { PagamentoAluno } from "@/app/painel/pagamentos/tipos";
+import type { MarcacaoFicha } from "@/app/painel/agenda/_data-access/agenda";
 import type { AlunoFicha } from "../../tipos";
-import { planosCadastro, type FormState } from "@/lib/validacao";
+import {
+  formatarAltura,
+  planosCadastro,
+  type FormState,
+} from "@/lib/validacao";
 
 const initialState: FormState = { success: false };
 
@@ -62,9 +67,13 @@ function Campo({
 export function FichaAluno({
   aluno,
   pagamento,
+  marcacoes,
+  agendaErro,
 }: {
   aluno: AlunoFicha;
   pagamento: PagamentoAluno | null;
+  marcacoes: MarcacaoFicha[];
+  agendaErro: string | null;
 }) {
   const router = useRouter();
   const salvar = atualizarAluno.bind(null, aluno.id);
@@ -191,6 +200,7 @@ export function FichaAluno({
               name="telefone"
               type="tel"
               required
+              maxLength={13}
               defaultValue={aluno.telefone}
               className={inputClass}
             />
@@ -213,7 +223,7 @@ export function FichaAluno({
           </Campo>
           <Campo
             id="altura"
-            label="Altura (cm)"
+            label="Altura (m)"
             icon="height"
             error={erro("altura")}
           >
@@ -222,8 +232,10 @@ export function FichaAluno({
               name="altura"
               type="text"
               inputMode="decimal"
-              placeholder="Não informado"
-              defaultValue={aluno.altura === null ? "" : String(aluno.altura)}
+              placeholder="1.60"
+              defaultValue={
+                aluno.altura === null ? "" : formatarAltura(aluno.altura)
+              }
               className={inputClass}
             />
           </Campo>
@@ -350,10 +362,40 @@ export function FichaAluno({
           pagamento={pagamento}
           tentarDeNovo={`/painel/alunos/${aluno.id}`}
         />
-        <div className="grid grid-cols-1 gap-space-md lg:grid-cols-2">
-          <BlocoFuturo titulo="Agenda" />
-          <BlocoFuturo titulo="Avaliação" />
-        </div>
+        <section className="rounded-xl bg-surface-container-low p-space-lg">
+          <h2 className="font-headline-sm text-headline-sm font-bold text-on-surface">
+            Agenda
+          </h2>
+          {agendaErro ? (
+            <p
+              className="mt-space-sm font-body-md text-body-md text-error"
+              role="alert"
+            >
+              {agendaErro}
+            </p>
+          ) : marcacoes.length === 0 ? (
+            <p className="mt-space-sm font-body-md text-body-md text-on-surface-variant">
+              Ainda não há registros.
+            </p>
+          ) : (
+            <ul className="mt-space-md flex flex-col gap-space-sm">
+              {marcacoes.map((marcacao) => (
+                <li
+                  key={marcacao.id}
+                  className="flex flex-col gap-space-xs rounded-lg bg-surface-container px-space-md py-space-sm sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <span className="font-body-md text-body-md text-on-surface">
+                    {marcacao.quando} · {marcacao.categoria}
+                  </span>
+                  <span className="font-label-md text-label-md text-on-surface-variant">
+                    {marcacao.situacao}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+        <BlocoFuturo titulo="Avaliação" />
       </div>
     </div>
   );

@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { sair } from "@/app/painel/_actions/sair";
 
-export type AreaPainel = "inicio" | "novo" | "lista" | "planos" | "pagamentos";
+export type AreaPainel =
+  "inicio" | "novo" | "lista" | "planos" | "pagamentos" | "horarios" | "agenda";
 
 type ItemMenu = {
   label: string;
@@ -36,6 +37,18 @@ const menu: ItemMenu[] = [
     icon: "receipt_long",
     href: "/painel/pagamentos",
     area: "pagamentos",
+  },
+  {
+    label: "Horários",
+    icon: "calendar_month",
+    href: "/painel/horarios",
+    area: "horarios",
+  },
+  {
+    label: "Agenda",
+    icon: "event",
+    href: "/painel/agenda",
+    area: "agenda",
   },
   { label: "Próximas Aulas", icon: "event_available", href: "/painel#aulas" },
   {

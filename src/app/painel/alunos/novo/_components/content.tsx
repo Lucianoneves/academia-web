@@ -162,7 +162,8 @@ export function CadastroAluno() {
               required
               inputMode="tel"
               autoComplete="tel"
-              placeholder="(11) 98765-4321"
+              maxLength={13}
+              placeholder="11 98765-4321"
               className={inputClass}
             />
           </Campo>
@@ -186,7 +187,7 @@ export function CadastroAluno() {
 
           <Campo
             id="altura"
-            label="Altura (cm)"
+            label="Altura (m)"
             icon="height"
             error={erro("altura")}
           >
@@ -196,7 +197,7 @@ export function CadastroAluno() {
               type="text"
               required
               inputMode="decimal"
-              placeholder="170.5"
+              placeholder="1.60"
               className={inputClass}
             />
           </Campo>

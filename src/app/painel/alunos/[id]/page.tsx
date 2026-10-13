@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { requireAdmin } from "@/lib/auth";
 import { CarregandoAcesso } from "@/components/acesso/carregando-acesso";
 import { PainelShell } from "@/components/painel/painel-shell";
+import { marcacoesDoAluno } from "../../agenda/_data-access/agenda";
 import { pagamentoDoAluno } from "../../pagamentos/_data-access/pagamentos";
 import { obterAluno } from "../_data-access/alunos";
 import { FichaAluno } from "./_components/ficha";
@@ -27,9 +28,10 @@ export default function FichaPage({
 async function Ficha({ params }: { params: Promise<{ id: string }> }) {
   const admin = await requireAdmin();
   const { id } = await params;
-  const [aluno, pagamento] = await Promise.all([
+  const [aluno, pagamento, agenda] = await Promise.all([
     obterAluno(id),
     pagamentoDoAluno(id),
+    marcacoesDoAluno(id),
   ]);
 
   if (!aluno) notFound();
@@ -39,6 +41,8 @@ async function Ficha({ params }: { params: Promise<{ id: string }> }) {
       <FichaAluno
         aluno={aluno}
         pagamento={pagamento.ok ? pagamento.pagamento : null}
+        marcacoes={agenda.ok ? agenda.marcacoes : []}
+        agendaErro={agenda.ok ? null : agenda.erro}
       />
     </PainelShell>
   );

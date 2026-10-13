@@ -28,8 +28,6 @@ const tipos = new Set<string>(planosCadastro.map((plano) => plano.value));
 type PlanoRow = {
   id: string;
   kind: string;
-  duration_days: number | null;
-  duration_label: string;
   price_cents: number;
   active: boolean;
 };
@@ -78,7 +76,6 @@ function lancamentosDe(
     lista.push({
       id: pagamento.id,
       plano: tipo,
-      duracaoDias: plano?.duration_days ?? null,
       pagoEm: pagamento.paid_on.slice(0, 10),
       criadoEm: pagamento.created_at,
       tipo: pagamento.kind,
@@ -121,16 +118,18 @@ function linhasDe(
 async function carregar() {
   await requireAdmin();
   const supabase = await createSessionClient();
-  const [planos, alunos, pagamentos] = await Promise.all([
-    supabase
-      .from("plans")
-      .select("id, kind, duration_days, duration_label, price_cents, active"),
+  const [planos, alunos, pagamentos, marcacoes] = await Promise.all([
+    supabase.from("plans").select("id, kind, price_cents, active"),
     supabase.from("students").select("id, name, active"),
     supabase
       .from("payments")
       .select(
         "id, student_id, plan_id, amount_cents, paid_on, kind, reverses_payment_id, created_at"
       ),
+    supabase
+      .from("appointments")
+      .select("consumed_payment_id")
+      .eq("status", "marcado"),
   ]);
 
   if (planos.error || alunos.error || pagamentos.error) {
@@ -140,11 +139,22 @@ async function carregar() {
     };
   }
 
+  const creditosUsados = new Set<string>();
+
+  if (!marcacoes.error) {
+    for (const marcacao of marcacoes.data ?? []) {
+      if (marcacao.consumed_payment_id) {
+        creditosUsados.add(marcacao.consumed_payment_id);
+      }
+    }
+  }
+
   return {
     ok: true as const,
     planos: (planos.data ?? []) as PlanoRow[],
     alunos: (alunos.data ?? []) as StudentRow[],
     pagamentos: (pagamentos.data ?? []) as PaymentRow[],
+    creditosUsados,
   };
 }
 
@@ -164,6 +174,7 @@ export async function listarPagamentos(filtro: {
   if (!base.ok) return base;
 
   const hoje = hojeSaoPaulo();
+  const creditosUsados = base.creditosUsados;
   const planos = new Map(base.planos.map((plano) => [plano.id, plano]));
   const porAluno = new Map<string, PaymentRow[]>();
 
@@ -178,7 +189,8 @@ export async function listarPagamentos(filtro: {
     .map((aluno) => {
       const analise = analisarPagamentos(
         lancamentosDe(porAluno.get(aluno.id) ?? [], planos),
-        hoje
+        hoje,
+        creditosUsados
       );
 
       return {
@@ -243,7 +255,8 @@ export async function pagamentoDoAluno(
   );
   const analise = analisarPagamentos(
     lancamentosDe(pagamentos, planos),
-    hojeSaoPaulo()
+    hojeSaoPaulo(),
+    base.creditosUsados
   );
 
   return {

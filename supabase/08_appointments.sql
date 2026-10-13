@@ -127,6 +127,10 @@ begin
     raise exception 'este horário não ocorre nesse dia da semana';
   end if;
 
+  if private.now_sao_paulo() >= (new.appointment_date + v_starts_at) then
+    raise exception 'não é possível agendar depois do início da aula';
+  end if;
+
   select active
     into v_student_active
     from public.students

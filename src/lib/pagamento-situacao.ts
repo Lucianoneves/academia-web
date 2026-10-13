@@ -11,7 +11,6 @@ export type SituacaoPagamento =
 export type Lancamento = {
   id: string;
   plano: TipoPlano;
-  duracaoDias: number | null;
   pagoEm: string;
   criadoEm: string;
   tipo: "recebimento" | "estorno";
@@ -26,11 +25,11 @@ const rotulos: Record<SituacaoPagamento, string> = {
   credito_utilizado: "Crédito utilizado",
 };
 
-const diasPadrao: Record<Exclude<TipoPlano, "avulso">, number> = {
-  mensal: 30,
-  trimestral: 90,
-  semestral: 180,
-  anual: 365,
+const mesesDoPlano: Record<Exclude<TipoPlano, "avulso">, number> = {
+  mensal: 1,
+  trimestral: 3,
+  semestral: 6,
+  anual: 12,
 };
 
 type Cobertura =
@@ -59,8 +58,29 @@ function somarDias(iso: string, dias: number) {
   return data.toISOString().slice(0, 10);
 }
 
-function fimDoPeriodo(inicio: string, dias: number) {
-  return somarDias(inicio, dias - 1);
+function ultimoDiaDoMes(ano: number, mes: number) {
+  return new Date(Date.UTC(ano, mes, 0)).getUTCDate();
+}
+
+function dataIso(ano: number, mes: number, dia: number) {
+  return new Date(Date.UTC(ano, mes - 1, dia)).toISOString().slice(0, 10);
+}
+
+function inicioDoPeriodoSeguinte(inicio: string, meses: number) {
+  const [ano, mes, dia] = inicio.split("-").map(Number);
+  const alvo = new Date(Date.UTC(ano, mes - 1 + meses, 1));
+  const anoAlvo = alvo.getUTCFullYear();
+  const mesAlvo = alvo.getUTCMonth() + 1;
+
+  if (dia <= ultimoDiaDoMes(anoAlvo, mesAlvo)) {
+    return dataIso(anoAlvo, mesAlvo, dia);
+  }
+
+  return dataIso(anoAlvo, mesAlvo + 1, 1);
+}
+
+function fimDoPeriodo(inicio: string, meses: number) {
+  return somarDias(inicioDoPeriodoSeguinte(inicio, meses), -1);
 }
 
 function situacaoNaData(cobertura: Cobertura, data: string): SituacaoPagamento {
@@ -71,12 +91,11 @@ function situacaoNaData(cobertura: Cobertura, data: string): SituacaoPagamento {
   return "atrasado";
 }
 
-function duracao(lancamento: Lancamento) {
-  if (lancamento.plano === "avulso") return null;
-  return lancamento.duracaoDias ?? diasPadrao[lancamento.plano];
-}
-
-export function analisarPagamentos(lancamentos: Lancamento[], hoje: string) {
+export function analisarPagamentos(
+  lancamentos: Lancamento[],
+  hoje: string,
+  creditosUsados: ReadonlySet<string> = new Set()
+) {
   const estornados = new Set(
     lancamentos
       .filter((item) => item.tipo === "estorno" && item.estornaId)
@@ -92,24 +111,26 @@ export function analisarPagamentos(lancamentos: Lancamento[], hoje: string) {
 
   const efeitos = new Map<string, string>();
   let cobertura: Cobertura = { tipo: "nenhuma" };
+  let creditoAvulsoId: string | null = null;
 
   for (const item of recebimentos) {
     if (item.plano === "avulso") {
       cobertura = { tipo: "avulso" };
+      creditoAvulsoId = item.id;
       efeitos.set(item.id, "Crédito de 1 aula.");
       continue;
     }
 
-    const dias = duracao(item);
-    if (!dias) continue;
+    creditoAvulsoId = null;
 
+    const meses = mesesDoPlano[item.plano];
     const antes = situacaoNaData(cobertura, item.pagoEm);
     const mesmoTipo =
       cobertura.tipo === "prazo" && cobertura.plano === item.plano;
 
     if (antes === "em_dia" && mesmoTipo && cobertura.tipo === "prazo") {
       const inicio = somarDias(cobertura.fim, 1);
-      const fim = fimDoPeriodo(inicio, dias);
+      const fim = fimDoPeriodo(inicio, meses);
       cobertura = {
         tipo: "prazo",
         plano: item.plano,
@@ -120,7 +141,7 @@ export function analisarPagamentos(lancamentos: Lancamento[], hoje: string) {
       continue;
     }
 
-    const fim = fimDoPeriodo(item.pagoEm, dias);
+    const fim = fimDoPeriodo(item.pagoEm, meses);
     cobertura = { tipo: "prazo", plano: item.plano, inicio: item.pagoEm, fim };
     efeitos.set(
       item.id,
@@ -139,13 +160,25 @@ export function analisarPagamentos(lancamentos: Lancamento[], hoje: string) {
     efeitos.set(id, "Estornado. Este valor não cobre o aluno.");
   }
 
-  const situacao = situacaoNaData(cobertura, hoje);
+  let situacao = situacaoNaData(cobertura, hoje);
+
+  if (
+    situacao === "credito_disponivel" &&
+    creditoAvulsoId &&
+    creditosUsados.has(creditoAvulsoId)
+  ) {
+    situacao = "credito_utilizado";
+    creditoAvulsoId = null;
+  }
+
+  if (situacao !== "credito_disponivel") creditoAvulsoId = null;
+
   const planoAtivo =
     situacao === "em_dia" && cobertura.tipo === "prazo"
       ? cobertura.plano
-      : situacao === "credito_disponivel"
+      : situacao === "credito_disponivel" || situacao === "credito_utilizado"
         ? "avulso"
         : null;
 
-  return { situacao, planoAtivo, efeitos };
+  return { situacao, planoAtivo, efeitos, creditoAvulsoId };
 }
