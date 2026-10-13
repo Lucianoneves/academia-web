@@ -1,43 +1,21 @@
 import Link from "next/link";
+import type { AulasHoje } from "@/app/painel/_data-access/aulas-hoje";
 import { DataAtual, formatarDataAtual } from "@/components/painel/data-atual";
 import { PainelShell } from "@/components/painel/painel-shell";
 
-const aulas = [
-  {
-    hora: "18:00",
-    nome: "Hipertrofia & Força",
-    detalhe: "Coach Rodrigo • Box 01",
-    vagas: "18 / 20 vagas",
-    tom: "aviso",
-  },
-  {
-    hora: "19:00",
-    nome: "Queima & HIIT Funcional",
-    detalhe: "Coach Bia Lopes • Sala Cardio",
-    vagas: "Lotado (25/25)",
-    tom: "erro",
-  },
-  {
-    hora: "20:00",
-    nome: "Mobilidade & Yoga",
-    detalhe: "Coach Camila • Studio Zen",
-    vagas: "12 / 15 vagas",
-    tom: "ok",
-  },
-] as const;
-
-function vagaClass(tom: (typeof aulas)[number]["tom"]) {
-  if (tom === "erro") return "bg-error-container/40 text-error";
-  if (tom === "ok") return "bg-secondary-fixed/10 text-secondary-fixed";
-  return "bg-tertiary-fixed/15 text-tertiary-fixed-dim";
+function rotuloOcupacao(ocupadas: number, vagas: number) {
+  if (ocupadas >= vagas) return `Lotado (${ocupadas}/${vagas})`;
+  return `${ocupadas} / ${vagas} vagas`;
 }
 
 export function Dashboard({
   adminName,
   resumo,
+  aulasHoje,
 }: {
   adminName: string;
   resumo: { total: number; ativos: number; nesteMes: number };
+  aulasHoje: AulasHoje;
 }) {
   const dataLabel = formatarDataAtual();
 
@@ -126,7 +104,7 @@ export function Dashboard({
         </div>
 
         <div className="grid grid-cols-1 gap-space-lg lg:grid-cols-2">
-          <section className="flex flex-col justify-between rounded-xl bg-surface-container-low p-space-lg shadow-sm">
+          <section className="flex flex-col rounded-xl bg-surface-container-low p-space-lg shadow-sm">
             <div className="flex items-center justify-between pb-space-md">
               <div className="flex items-center gap-space-sm">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-container text-primary-fixed">
@@ -136,47 +114,21 @@ export function Dashboard({
                 </div>
                 <div>
                   <h2 className="font-headline-sm text-headline-sm font-bold text-on-surface">
-                    Próximas Aulas
+                    Aulas de hoje
                   </h2>
                   <p className="font-body-sm text-body-sm text-on-surface-variant">
-                    Grade selecionada de hoje
+                    Horários ativos deste dia
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
+              <Link
+                href="/painel/horarios"
                 className="rounded-lg bg-surface-container px-space-md py-1 font-label-sm text-label-sm text-primary-fixed transition-colors hover:bg-surface-container-high"
               >
                 Ver Grade
-              </button>
+              </Link>
             </div>
-            <div className="flex flex-col gap-space-sm">
-              {aulas.map((aula) => (
-                <div
-                  key={aula.hora}
-                  className="flex items-center justify-between rounded-lg bg-surface-container p-space-md"
-                >
-                  <div className="flex items-center gap-space-md">
-                    <span className="w-16 font-headline-sm text-headline-sm font-bold text-primary-fixed">
-                      {aula.hora}
-                    </span>
-                    <div>
-                      <span className="block font-label-lg text-label-lg font-bold text-on-surface">
-                        {aula.nome}
-                      </span>
-                      <span className="font-body-sm text-body-sm text-on-surface-variant">
-                        {aula.detalhe}
-                      </span>
-                    </div>
-                  </div>
-                  <span
-                    className={`rounded-full px-space-sm py-0.5 font-label-sm text-label-sm font-bold uppercase ${vagaClass(aula.tom)}`}
-                  >
-                    {aula.vagas}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <AulasDeHoje aulasHoje={aulasHoje} />
           </section>
 
           <div className="flex flex-col gap-space-lg">
@@ -314,6 +266,66 @@ export function Dashboard({
         </div>
       </div>
     </PainelShell>
+  );
+}
+
+function AulasDeHoje({ aulasHoje }: { aulasHoje: AulasHoje }) {
+  if (!aulasHoje.ok) {
+    return (
+      <div>
+        <p className="font-body-md text-body-md text-error" role="alert">
+          {aulasHoje.erro}
+        </p>
+        <Link
+          href="/painel"
+          className="mt-space-sm inline-flex font-label-md text-label-md text-primary-fixed"
+        >
+          Tentar de novo
+        </Link>
+      </div>
+    );
+  }
+
+  if (aulasHoje.aulas.length === 0) {
+    return (
+      <p className="font-body-md text-body-md text-on-surface-variant">
+        Não há aula hoje.
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-space-sm">
+      {aulasHoje.aulas.map((aula) => {
+        const lotado = aula.ocupadas >= aula.vagas;
+
+        return (
+          <Link
+            key={aula.id}
+            href={`/painel/agenda?data=${aulasHoje.data}`}
+            className="flex items-center justify-between gap-space-md rounded-lg bg-surface-container p-space-md transition-colors hover:bg-surface-container-high"
+          >
+            <div className="flex min-w-0 items-center gap-space-md">
+              <span className="shrink-0 font-headline-sm text-headline-sm font-bold whitespace-nowrap text-primary-fixed">
+                {aula.inicio}–{aula.fim}
+              </span>
+              <span className="truncate font-label-lg text-label-lg font-bold text-on-surface">
+                {aula.categoria}
+              </span>
+            </div>
+            <span
+              className={`shrink-0 rounded-full px-space-sm py-0.5 font-label-sm text-label-sm font-bold ${
+                lotado
+                  ? "bg-error-container/40 text-error"
+                  : "bg-secondary-fixed/10 text-secondary-fixed"
+              }`}
+            >
+              {rotuloOcupacao(aula.ocupadas, aula.vagas)}
+            </span>
+          </Link>
+        );
+      })}
+    </div>
   );
 }
 
