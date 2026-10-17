@@ -1,0 +1,14 @@
+---
+description: Spec Kit só roda com comando /speckit-*. Specs do PRD ficam em docs/prd/.
+alwaysApply: true
+---
+
+# Spec Kit
+
+O Spec Kit está instalado e parado. Não preencha `.specify/memory/constitution.md`. Não crie `specs/`. Não rode specify, plan, tasks nem implement.
+
+Rode um fluxo `speckit-*` só quando a mensagem do usuário começar com o comando de barra (`/speckit-specify`, `/speckit-plan`, `/speckit-tasks`, `/speckit-implement` ou outro `/speckit-*`).
+
+Frases como "cria a spec", "usa o Spec Kit" ou "documenta esta feature" não são chamada. A spec continua em `docs/prd/`. Não reescreva um PRD existente para `specs/`.
+
+Não edite os arquivos em `.cursor/skills/speckit-*`.
