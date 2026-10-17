@@ -338,8 +338,8 @@ function CartaoHorario({
       <div className="flex flex-col justify-between gap-space-md sm:flex-row sm:items-start">
         <div>
           <h2 className="font-headline-sm text-headline-sm font-bold text-on-surface">
-            {nomeDia(horario.dia)} · {horaCurta(horario.inicio)}–
-            {horaCurta(horario.fim)}
+            {nomeDia(horario.dia)}, {horario.ocorrencia} ·{" "}
+            {horaCurta(horario.inicio)}–{horaCurta(horario.fim)}
           </h2>
           <p className="font-body-md text-body-md text-on-surface-variant">
             {horario.categoria} · {horario.vagas}{" "}

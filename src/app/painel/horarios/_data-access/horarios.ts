@@ -1,6 +1,6 @@
 import "server-only";
 
-import { ordemDias, rotuloCategoria } from "@/lib/agenda";
+import { ordemDias, rotuloCategoria, rotuloProximaData } from "@/lib/agenda";
 import { requireAdmin } from "@/lib/auth";
 import { createSessionClient } from "@/lib/supabase/server";
 
@@ -19,6 +19,7 @@ export type HorarioPainel = {
   categoria: string;
   vagas: number;
   ativo: boolean;
+  ocorrencia: string;
 };
 
 type ScheduleRow = {
@@ -78,6 +79,7 @@ export async function listarHorarios(ativos: boolean): Promise<
         categoria: rotuloCategoria(categoria?.name ?? "Categoria"),
         vagas: horario.capacity,
         ativo: horario.active,
+        ocorrencia: rotuloProximaData(horario.weekday),
       };
     })
     .sort((a, b) => {

@@ -12,8 +12,30 @@ const dias = [
 
 export const ordemDias = [1, 2, 3, 4, 5, 6, 0];
 
+const mesesCurtos = [
+  "jan",
+  "fev",
+  "mar",
+  "abr",
+  "mai",
+  "jun",
+  "jul",
+  "ago",
+  "set",
+  "out",
+  "nov",
+  "dez",
+] as const;
+
 export function nomeDia(dia: number) {
   return dias[dia] ?? "Dia";
+}
+
+export function rotuloProximaData(weekday: number, hoje = hojeSaoPaulo()) {
+  const distancia = (weekday - diaDaSemana(hoje) + 7) % 7;
+  const [ano, mes, dia] = hoje.split("-").map(Number);
+  const data = new Date(Date.UTC(ano, mes - 1, dia + distancia));
+  return `${data.getUTCDate()} ${mesesCurtos[data.getUTCMonth()]}`;
 }
 
 export function diaDaSemana(iso: string) {

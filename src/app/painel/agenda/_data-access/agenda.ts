@@ -322,6 +322,7 @@ export async function marcacoesDoAluno(
     ])
   );
 
+  const hoje = hojeSaoPaulo();
   const lista = (
     (marcacoes.data ?? []) as {
       id: string;
@@ -331,6 +332,7 @@ export async function marcacoesDoAluno(
       created_at: string;
     }[]
   )
+    .filter((marcacao) => marcacao.appointment_date.slice(0, 10) >= hoje)
     .map((marcacao) => {
       const horario = grade.get(marcacao.schedule_id);
       const inicio = horario ? horaCurta(horario.starts_at) : "";
