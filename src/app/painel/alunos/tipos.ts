@@ -22,6 +22,7 @@ export type AlunoFicha = {
   altura: number | null;
   plano: (typeof planosCadastro)[number]["value"] | null;
   restricoes: string | null;
+  email: string | null;
   ativo: boolean;
 };
 

@@ -111,7 +111,7 @@ export async function obterAluno(id: string): Promise<AlunoFicha | null> {
   const { data, error } = await supabase
     .from("students")
     .select(
-      "id, name, birth_date, phone, weight_kg, height_cm, chosen_plan, medical_restrictions, active"
+      "id, name, birth_date, phone, email, weight_kg, height_cm, chosen_plan, medical_restrictions, active"
     )
     .eq("id", id)
     .maybeSingle();
@@ -133,6 +133,7 @@ export async function obterAluno(id: string): Promise<AlunoFicha | null> {
     altura: data.height_cm === null ? null : Number(data.height_cm),
     plano: plano?.value ?? null,
     restricoes: data.medical_restrictions,
+    email: data.email,
     ativo: data.active,
   };
 }

@@ -118,6 +118,7 @@ export function FichaAluno({
     nome: aluno.nome,
     nascimento: aluno.nascimento,
     telefone: aluno.telefone,
+    email: aluno.email ?? "",
     peso: String(aluno.peso),
     altura: aluno.altura === null ? "" : formatarAltura(aluno.altura),
     plano: aluno.plano ?? "",
@@ -145,6 +146,7 @@ export function FichaAluno({
       nome: String(data.get("nome") ?? ""),
       nascimento: String(data.get("nascimento") ?? ""),
       telefone: String(data.get("telefone") ?? ""),
+      email: String(data.get("email") ?? ""),
       peso: String(data.get("peso") ?? ""),
       altura: String(data.get("altura") ?? ""),
       plano: String(data.get("plano") ?? ""),
@@ -165,6 +167,7 @@ export function FichaAluno({
       nome: String(data.get("nome") ?? ""),
       nascimento: String(data.get("nascimento") ?? ""),
       telefone: String(data.get("telefone") ?? ""),
+      email: String(data.get("email") ?? ""),
       peso: String(data.get("peso") ?? ""),
       altura: String(data.get("altura") ?? ""),
       plano: String(data.get("plano") ?? ""),
@@ -176,6 +179,7 @@ export function FichaAluno({
         nome: true,
         nascimento: true,
         telefone: true,
+        email: true,
         peso: true,
         altura: true,
         plano: true,
@@ -228,7 +232,7 @@ export function FichaAluno({
           </h2>
           <p className="font-body-md text-body-md text-on-surface-variant">
             Altura e plano vazios continuam como não informado. Restrições em
-            branco contam como nenhuma.
+            branco contam como nenhuma. E-mail vazio não aparece como dado.
           </p>
         </div>
 
@@ -295,6 +299,24 @@ export function FichaAluno({
               required
               maxLength={13}
               defaultValue={aluno.telefone}
+              className={inputClass}
+            />
+          </Campo>
+          <Campo
+            id="email"
+            label="E-mail"
+            icon="mail"
+            error={erro("email")}
+            className="lg:col-span-2"
+          >
+            <input
+              id="email"
+              name="email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              defaultValue={aluno.email ?? ""}
+              placeholder="Opcional"
               className={inputClass}
             />
           </Campo>
@@ -469,7 +491,7 @@ export function FichaAluno({
             </p>
           ) : marcacoes.length === 0 ? (
             <p className="mt-space-sm font-body-md text-body-md text-on-surface-variant">
-              Ainda não há registros.
+              Nenhuma aula a partir de hoje.
             </p>
           ) : (
             <ul className="mt-space-md flex flex-col gap-space-sm">

@@ -163,6 +163,18 @@ export const alunoSchema = z.object({
     .string()
     .trim()
     .transform((value) => (value.length > 0 ? value : null)),
+  email: z
+    .string()
+    .trim()
+    .max(254, "Informe um e-mail válido.")
+    .transform((value) => value.toLowerCase())
+    .refine(
+      (value) => value === "" || z.string().email().safeParse(value).success,
+      {
+        message: "Informe um e-mail válido.",
+      }
+    )
+    .transform((value) => (value.length > 0 ? value : null)),
 });
 
 const planoOpcional = z

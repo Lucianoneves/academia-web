@@ -34,6 +34,7 @@ const vazio = {
   altura: "",
   plano: "",
   restricoes: "",
+  email: "",
 };
 
 function lerFormulario(data: FormData) {
@@ -45,6 +46,7 @@ function lerFormulario(data: FormData) {
     altura: String(data.get("altura") ?? ""),
     plano: String(data.get("plano") ?? ""),
     restricoes: String(data.get("restricoes") ?? ""),
+    email: String(data.get("email") ?? ""),
   };
 }
 
@@ -149,6 +151,7 @@ export function CadastroAluno({
         peso: true,
         altura: true,
         plano: true,
+        email: true,
       });
       return;
     }
@@ -176,8 +179,8 @@ export function CadastroAluno({
             Dados cadastrais e físicos
           </h2>
           <p className="font-body-md text-body-md text-on-surface-variant">
-            Nome, nascimento, telefone, peso, altura, plano e restrições
-            médicas.
+            Nome, nascimento, telefone, e-mail, peso, altura, plano e restrições
+            médicas. O e-mail pode ficar vazio.
           </p>
         </div>
 
@@ -253,6 +256,26 @@ export function CadastroAluno({
               value={valores.telefone}
               onChange={(event) => alterar("telefone", event.target.value)}
               placeholder="11 98765-4321"
+              className={inputClass}
+            />
+          </Campo>
+
+          <Campo
+            id="email"
+            label="E-mail"
+            icon="mail"
+            error={erro("email")}
+            className="lg:col-span-2"
+          >
+            <input
+              id="email"
+              name="email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              value={valores.email}
+              onChange={(event) => alterar("email", event.target.value)}
+              placeholder="Opcional"
               className={inputClass}
             />
           </Campo>

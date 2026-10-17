@@ -24,6 +24,7 @@ export async function criarAluno(
     altura: formData.get("altura"),
     plano: formData.get("plano") ?? "",
     restricoes: formData.get("restricoes") ?? "",
+    email: formData.get("email") ?? "",
   });
 
   if (!parsed.success) {
@@ -48,10 +49,19 @@ export async function criarAluno(
     height_cm: parsed.data.altura,
     chosen_plan: parsed.data.plano,
     medical_restrictions: parsed.data.restricoes,
+    email: parsed.data.email,
   });
 
   if (error) {
     if (error.code === "23505") {
+      const mensagem = error.message.toLowerCase();
+      if (mensagem.includes("students_email")) {
+        return {
+          success: false,
+          errors: { email: ["Este e-mail já está cadastrado."] },
+        };
+      }
+
       return {
         success: false,
         errors: { telefone: ["Este telefone já está cadastrado."] },

@@ -75,7 +75,7 @@ Entregar o painel em que o administrador:
 Decisões confirmadas e suposições estão marcadas. Suposição é o que este PRD adota para a tela funcionar; não foi uma escolha explícita do produto.
 
 - Regra 1 — **Confirmado:** o painel tem as áreas Alunos, Planos, Pagamentos, Horários, Agenda, Categorias e Avaliação médica, além do início com o resumo.
-- Regra 2 — **Confirmado:** aluno reúne nome, data de nascimento, telefone, peso e restrições médicas.
+- Regra 2 — **Confirmado:** aluno reúne nome, data de nascimento, telefone, peso e restrições médicas. E-mail é contato opcional: pode ficar vazio, não se repete entre alunos quando preenchido, e não serve para entrar no painel nem para enviar aviso.
 - Regra 3 — **Confirmado:** os planos são avulso, mensal, trimestral, semestral e anual.
 - Regra 4 — **Confirmado:** a academia define o preço de cada plano. Avulso vale 1 aula. Mensal, trimestral, semestral e anual valem 1, 3, 6 e 12 meses de calendário, contados a partir da data em que o período começa. O último dia coberto é a véspera do mesmo dia. Se esse dia não existe, o período seguinte começa no dia 1 e o ciclo passa a seguir esse dia. Lançamentos já feitos usam esta mesma conta.
 - Regra 5 — **Confirmado:** o aluno tem um plano ativo por vez. O plano ativo é o do pagamento mais recente que ainda cobre hoje, ou o crédito avulso ainda disponível.
@@ -112,7 +112,7 @@ Decisões confirmadas e suposições estão marcadas. Suposição é o que este 
 ### Fluxo 1 — Cadastrar o aluno e abrir a ficha
 
 1. O administrador abre Alunos e escolhe incluir.
-2. Informa nome, data de nascimento, telefone, peso e restrições médicas.
+2. Informa nome, data de nascimento, telefone, peso e restrições médicas. E-mail pode ficar vazio.
 3. Salva. O aluno aparece na lista como ativo e **sem pagamento**.
 4. Abre a ficha e vê os dados, a situação de pagamento, os agendamentos e as avaliações.
 
@@ -143,7 +143,7 @@ Decisões confirmadas e suposições estão marcadas. Suposição é o que este 
 
 ## 9. Critérios de aceite
 
-- O administrador consegue incluir, editar, buscar e inativar um aluno com nome, data de nascimento, telefone, peso e restrições médicas.
+- O administrador consegue incluir, editar, buscar e inativar um aluno com nome, data de nascimento, telefone, peso e restrições médicas. E-mail é opcional no cadastro, na edição e na ficha. A lista e a busca continuam por nome ou telefone.
 - O administrador consegue ver e editar o preço dos cinco planos.
 - O administrador consegue lançar um pagamento em dinheiro e ver o histórico daquele aluno.
 - O sistema deve mostrar a situação **em dia**, **atrasado** ou **sem pagamento** para planos com prazo, e **disponível** ou **utilizado** para o crédito avulso.
@@ -326,12 +326,12 @@ Specs:
 - **Intenção (por quê):** Aluno é a peça que pagamento, agenda e avaliação usam. Sem a ficha, o resto do painel não tem sobre quem falar.
 - **Contexto:** Usa a navegação da Spec 01. A ficha reserva espaço para situação de pagamento (Spec 06), agendamentos (Spec 07) e avaliações (Spec 08). Enquanto essas specs não existirem, esses blocos da ficha dizem que ainda não há registros.
 - **Atores:** Administrador.
-- **Descrição do comportamento:** A área Alunos lista nome, telefone e situação cadastral (ativo ou inativo). Dá para buscar por nome ou telefone. Incluir e editar usam os mesmos campos: nome, data de nascimento, telefone, peso e restrições médicas. Restrições podem ficar vazias e, nesse caso, a ficha mostra "nenhuma". Ao salvar um aluno novo, ele entra ativo, no topo da lista. A ficha mostra os dados e três blocos futuros: pagamento, agenda e avaliação. Inativar pede confirmação, tira o aluno das escolhas de agenda e de pagamento novo, e mantém a ficha consultável pelo filtro "inativos". Reativar devolve o aluno às escolhas. Não há exclusão definitiva.
-- **Entradas e saídas:** Entradas: nome, data de nascimento, telefone, peso em kg, restrições médicas, e a ação ativar ou inativar. Saídas: lista filtrada, ficha do aluno e mensagem de sucesso ou de erro ao lado do campo inválido.
-- **Dados/entidades envolvidos (conceitual):** Aluno: nome, data de nascimento, telefone, peso, restrições médicas, situação cadastral (ativo ou inativo).
+- **Descrição do comportamento:** A área Alunos lista nome, telefone e situação cadastral (ativo ou inativo). Dá para buscar por nome ou telefone. Incluir e editar usam os mesmos campos: nome, data de nascimento, telefone, e-mail, peso e restrições médicas. Restrições podem ficar vazias e, nesse caso, a ficha mostra "nenhuma". E-mail pode ficar vazio; a ficha não mostra uma linha de e-mail vazio. Ao salvar um aluno novo, ele entra ativo, no topo da lista. A ficha mostra os dados e os blocos de pagamento, agenda e avaliação. Inativar pede confirmação, tira o aluno das escolhas de agenda e de pagamento novo, e mantém a ficha consultável pelo filtro "inativos". Reativar devolve o aluno às escolhas. Não há exclusão definitiva. O e-mail não cria acesso do aluno e não envia aviso.
+- **Entradas e saídas:** Entradas: nome, data de nascimento, telefone, e-mail, peso em kg, restrições médicas, e a ação ativar ou inativar. Saídas: lista filtrada, ficha do aluno e mensagem de sucesso ou de erro ao lado do campo inválido.
+- **Dados/entidades envolvidos (conceitual):** Aluno: nome, data de nascimento, telefone, e-mail opcional, peso, restrições médicas, situação cadastral (ativo ou inativo).
 - **Estados e transições:** Novo aluno nasce ativo. Ativo → inativo só com confirmação. Inativo → ativo ao reativar. A situação de pagamento não muda nesta spec; todo aluno novo é tratado como sem pagamento até a Spec 06.
-- **Regras de negócio:** Campos obrigatórios são nome, data de nascimento, telefone e peso. Restrições são opcionais. Telefone não se repete entre alunos. Aluno inativo continua no histórico. Vale a Regra 17.
-- **Validações:** Nome com pelo menos 2 caracteres. Data de nascimento preenchida e anterior a hoje. Telefone com DDD e número, sem letras. Peso maior que zero, em kg, aceitando uma casa decimal. Telefone já usado por outro aluno impede salvar e aponta o campo.
+- **Regras de negócio:** Campos obrigatórios são nome, data de nascimento, telefone e peso. Restrições e e-mail são opcionais. Telefone não se repete entre alunos. E-mail preenchido não se repete entre alunos; maiúsculas e minúsculas contam como o mesmo endereço. Pode coincidir com o e-mail de um administrador. Apagar o e-mail na edição volta a vazio. Aluno inativo continua no histórico. Vale a Regra 17. O aluno não entra no painel com esse e-mail.
+- **Validações:** Nome com pelo menos 2 caracteres. Data de nascimento preenchida e anterior a hoje. Telefone com DDD e número, sem letras. Peso maior que zero, em kg, aceitando uma casa decimal. Telefone já usado por outro aluno impede salvar e aponta o campo. E-mail vazio salva. E-mail preenchido precisa ser válido. E-mail já usado por outro aluno impede salvar e aponta o campo.
 - **Fluxo do usuário (passo a passo):**
   1. O administrador abre Alunos.
   2. Escolhe incluir e preenche os campos.
@@ -339,16 +339,18 @@ Specs:
   4. Abre a ficha para conferir.
   5. Edita peso ou restrições e salva de novo.
   6. Se a pessoa sair da academia, inativa e confirma.
-- **Casos de borda e erros:** Lista vazia: convite para incluir o primeiro aluno, sem tabela vazia quebrada. Busca sem resultado: mensagem clara e a lista some só enquanto o termo não encontra ninguém. Limpar a busca restaura a lista. Data de hoje ou futura na nascimento: o campo explica e não salva. Peso zero ou negativo: não salva. Dois cliques em salvar: grava uma vez só. Inativar é reversível; não existe desfazer apagando o histórico porque não há apagar.
+- **Casos de borda e erros:** Lista vazia: convite para incluir o primeiro aluno, sem tabela vazia quebrada. Busca sem resultado: mensagem clara e a lista some só enquanto o termo não encontra ninguém. Limpar a busca restaura a lista. Data de hoje ou futura na nascimento: o campo explica e não salva. Peso zero ou negativo: não salva. Dois cliques em salvar: grava uma vez só. Inativar é reversível; não existe desfazer apagando o histórico porque não há apagar. Aluno antigo sem e-mail abre e salva. E-mail inválido não salva. O mesmo e-mail com maiúsculas diferentes não salva no segundo aluno.
 - **Impacto no existente:** Preenche a área Alunos criada na Spec 01.
 - **Critérios de aceite (Dado/Quando/Então):**
   - Dado o formulário válido, Quando o administrador salva, Então o aluno ativo aparece na lista com nome e telefone.
   - Dado um telefone já cadastrado, Quando tenta salvar outro aluno, Então o sistema recusa e indica o telefone.
   - Dado um aluno ativo com ficha aberta, Quando o administrador inativa e confirma, Então o aluno sai da lista padrão e aparece no filtro de inativos.
   - Dado restrições em branco, Quando a ficha abre, Então o texto exibido é "nenhuma".
-- **Definição de pronto:** Dá para criar, buscar, editar, abrir a ficha, inativar e reativar um aluno, e os erros de campo aparecem sem perder o que já foi digitado.
+  - Dado um aluno sem e-mail, Quando a ficha abre, Então não há linha de e-mail vazio e o campo pode ser preenchido.
+  - Dado um e-mail já usado por outro aluno, Quando tenta salvar, Então o sistema recusa e indica o e-mail.
+- **Definição de pronto:** Dá para criar, buscar, editar, abrir a ficha, inativar e reativar um aluno, o e-mail opcional grava na ficha sem entrar na lista nem na busca, e os erros de campo aparecem sem perder o que já foi digitado.
 - **Dependências:** Spec 01 — a área Alunos no menu. Spec 10 — só administrador autenticado. Spec 11 — o aluno salvo permanece e a lista atualiza depois de gravar.
-- **Fora do escopo desta spec:** E-mail e senha do aluno, primeiro acesso do aluno, foto, pagamento, agenda, avaliação e exclusão definitiva.
+- **Fora do escopo desta spec:** Senha do aluno, primeiro acesso do aluno, aviso por e-mail, foto, pagamento, agenda, avaliação e exclusão definitiva.
 
 ### Spec 03 — Planos
 
