@@ -17,3 +17,12 @@ export function supabaseAnonKey() {
 export function supabaseServiceRoleKey() {
   return readEnv("SUPABASE_SERVICE_ROLE_KEY");
 }
+
+export function authCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV !== "development",
+    sameSite: "lax" as const,
+    path: "/",
+  };
+}

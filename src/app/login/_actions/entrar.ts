@@ -1,10 +1,17 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import {
+  ipDoPedido,
+  loginExcedeuTentativas,
+  loginLimparTentativas,
+  loginRegistrarFalha,
+} from "@/lib/login-limite";
 import { createSessionClient } from "@/lib/supabase/server";
 import { fieldErrors, loginSchema, type FormState } from "@/lib/validacao";
 
 const RECUSA = "Não foi possível entrar. Confira os dados e tente de novo.";
+const MUITAS = "Muitas tentativas. Espere alguns minutos e tente de novo.";
 
 export async function entrar(
   _previous: FormState,
@@ -19,13 +26,21 @@ export async function entrar(
     return { success: false, errors: fieldErrors(parsed.error) };
   }
 
+  const email = parsed.data.email.toLowerCase();
+  const ip = await ipDoPedido();
+
+  if (loginExcedeuTentativas(ip, email)) {
+    return { success: false, message: MUITAS };
+  }
+
   const supabase = await createSessionClient();
   const { error } = await supabase.auth.signInWithPassword({
-    email: parsed.data.email.toLowerCase(),
+    email,
     password: parsed.data.senha,
   });
 
   if (error) {
+    loginRegistrarFalha(ip, email);
     return { success: false, message: RECUSA };
   }
 
@@ -33,6 +48,7 @@ export async function entrar(
   const userId = userData.user?.id;
 
   if (!userId) {
+    loginRegistrarFalha(ip, email);
     return { success: false, message: RECUSA };
   }
 
@@ -47,5 +63,6 @@ export async function entrar(
     return { success: false, message: RECUSA };
   }
 
+  loginLimparTentativas(ip, email);
   redirect("/painel");
 }
