@@ -105,6 +105,10 @@ security definer
 set search_path = ''
 as $$
 begin
+  if (auth.jwt() ->> 'role') is distinct from 'service_role' then
+    raise exception 'acesso recusado';
+  end if;
+
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('academia.first_admin'));
 
   delete from private.first_admin_claim
@@ -133,6 +137,10 @@ security definer
 set search_path = ''
 as $$
 begin
+  if (auth.jwt() ->> 'role') is distinct from 'service_role' then
+    raise exception 'acesso recusado';
+  end if;
+
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('academia.first_admin'));
 
   if exists (select 1 from public.administrators) then
@@ -143,8 +151,8 @@ begin
 end;
 $$;
 
-revoke all on function public.claim_first_admin() from public;
-revoke all on function public.release_first_admin_claim() from public;
+revoke all on function public.claim_first_admin() from public, anon, authenticated;
+revoke all on function public.release_first_admin_claim() from public, anon, authenticated;
 grant execute on function public.claim_first_admin() to service_role;
 grant execute on function public.release_first_admin_claim() to service_role;
 

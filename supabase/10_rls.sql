@@ -9,6 +9,7 @@
 
 -- Trava do primeiro administrador. Sem policy: ninguém pela API lê esta linha.
 -- claim_first_admin() e release_first_admin_claim() são security definer.
+-- Execute só para service_role; o corpo recusa qualquer outro papel.
 
 alter table private.first_admin_claim enable row level security;
 alter table private.first_admin_claim force row level security;
