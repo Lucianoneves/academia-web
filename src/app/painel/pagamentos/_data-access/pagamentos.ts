@@ -38,6 +38,7 @@ type PaymentRow = {
   plan_id: string;
   amount_cents: number;
   paid_on: string;
+  method: string;
   kind: string;
   reverses_payment_id: string | null;
   created_at: string;
@@ -106,7 +107,7 @@ function linhasDe(
       data: formatarDataIso(pagamento.paid_on.slice(0, 10)),
       plano: plano ? nomePlano(plano.kind) : "Plano",
       valor: formatarReais(pagamento.amount_cents),
-      forma: "Dinheiro",
+      forma: pagamento.method === "cartao" ? "Cartão" : "Dinheiro",
       efeito: efeitos.get(pagamento.id) ?? "",
       podeEstornar: pagamento.kind === "recebimento" && !estornado,
     };
@@ -124,7 +125,7 @@ async function carregar() {
     supabase
       .from("payments")
       .select(
-        "id, student_id, plan_id, amount_cents, paid_on, kind, reverses_payment_id, created_at"
+        "id, student_id, plan_id, amount_cents, paid_on, method, kind, reverses_payment_id, created_at"
       ),
     supabase
       .from("appointments")

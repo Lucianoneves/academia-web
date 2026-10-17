@@ -8,6 +8,7 @@ export type FormState = {
   message?: string;
   errors?: FieldErrors;
   stamp?: number;
+  redirect?: string;
 };
 
 export function fieldErrors(error: z.ZodError): FieldErrors {
@@ -263,4 +264,34 @@ export const lancamentoSchema = z.object({
     .refine((value) => value <= hojeSaoPaulo(), {
       message: "A data do pagamento não pode ser futura.",
     }),
+});
+
+export const avaliacaoSchema = z.object({
+  data: z
+    .string()
+    .trim()
+    .min(1, "Informe a data.")
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Informe a data.")
+    .refine((value) => value <= hojeSaoPaulo(), {
+      message: "A data da avaliação não pode ser futura.",
+    }),
+  observacoes: z
+    .string()
+    .trim()
+    .transform((value) => (value.length > 0 ? value : null)),
+});
+
+export const marcacaoAvaliacaoSchema = z.object({
+  dia: z
+    .string()
+    .trim()
+    .min(1, "Informe o dia.")
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Informe o dia.")
+    .refine((value) => value >= hojeSaoPaulo(), {
+      message: "O dia da marcação não pode ser no passado.",
+    }),
+  hora: z
+    .string()
+    .trim()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Informe a hora."),
 });

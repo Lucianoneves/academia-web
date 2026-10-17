@@ -7,6 +7,7 @@ import { CarregandoAcesso } from "@/components/acesso/carregando-acesso";
 import { PainelShell } from "@/components/painel/painel-shell";
 import { FormularioLancamento } from "./_components/lancamento";
 import { listarPagamentos } from "./_data-access/pagamentos";
+import { cartaoEmTeste } from "@/lib/stripe-teste";
 
 export const metadata: Metadata = {
   title: "APEX.FIT — Pagamentos",
@@ -87,8 +88,9 @@ async function Pagamentos({
             Pagamentos
           </h1>
           <p className="mt-space-xs max-w-2xl font-body-md text-body-md text-on-surface-variant">
-            Recebimento em dinheiro. O valor sugerido pode ser ajustado. Um erro
-            se corrige com estorno, sem apagar a linha.
+            Recebimento em dinheiro, com valor ajustável, ou no cartão pelo
+            preço do plano. No cartão a linha aparece quando a Stripe confirmar.
+            Um erro se corrige com estorno, sem apagar a linha.
           </p>
         </div>
 
@@ -116,6 +118,7 @@ async function Pagamentos({
               <FormularioLancamento
                 opcoes={resultado.opcoes}
                 alunoInicial={params.aluno ?? ""}
+                cartaoDisponivel={cartaoEmTeste()}
               />
             </section>
 

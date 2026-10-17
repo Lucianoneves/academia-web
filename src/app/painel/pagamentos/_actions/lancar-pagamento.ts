@@ -9,6 +9,7 @@ import {
   lancamentoSchema,
   type FormState,
 } from "@/lib/validacao";
+import { clienteStripeTeste } from "@/lib/stripe-teste";
 
 const FALHA = "Não foi possível salvar o pagamento. Tente de novo.";
 let gravacao = 0;
@@ -133,7 +134,9 @@ export async function estornarPagamento(id: string): Promise<FormState> {
   const supabase = await createSessionClient();
   const origem = await supabase
     .from("payments")
-    .select("id, student_id, plan_id, amount_cents, kind")
+    .select(
+      "id, student_id, plan_id, amount_cents, kind, method, stripe_payment_intent_id"
+    )
     .eq("id", id)
     .maybeSingle();
 
@@ -162,17 +165,52 @@ export async function estornarPagamento(id: string): Promise<FormState> {
     return { success: false, message: "Este recebimento já foi estornado." };
   }
 
+  let reembolsoId: string | null = null;
+
+  if (origem.data.method === "cartao") {
+    const stripe = clienteStripeTeste();
+    const intent = origem.data.stripe_payment_intent_id;
+    if (!stripe || !intent) {
+      return {
+        success: false,
+        message: "Não foi possível reembolsar esta cobrança no cartão.",
+      };
+    }
+
+    try {
+      const reembolso = await stripe.refunds.create({ payment_intent: intent });
+      reembolsoId = reembolso.id;
+    } catch {
+      const lista = await stripe.refunds.list({
+        payment_intent: intent,
+        limit: 1,
+      });
+      reembolsoId = lista.data[0]?.id ?? null;
+    }
+
+    if (!reembolsoId) {
+      return {
+        success: false,
+        message: "Não foi possível reembolsar esta cobrança no cartão.",
+      };
+    }
+  }
+
   const { error } = await supabase.from("payments").insert({
     student_id: origem.data.student_id,
     plan_id: origem.data.plan_id,
     amount_cents: origem.data.amount_cents,
     paid_on: hojeSaoPaulo(),
-    method: "dinheiro",
+    method: origem.data.method === "cartao" ? "cartao" : "dinheiro",
     kind: "estorno",
     reverses_payment_id: origem.data.id,
+    ...(reembolsoId ? { stripe_refund_id: reembolsoId } : {}),
   });
 
   if (error) {
+    if (error.code === "23505") {
+      return { success: true, message: "Recebimento estornado." };
+    }
     return { success: false, message: mensagemBanco(error.message) };
   }
 

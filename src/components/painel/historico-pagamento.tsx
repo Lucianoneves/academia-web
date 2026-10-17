@@ -91,7 +91,10 @@ export function HistoricoPagamento({
                 {linha.efeito}
               </p>
               {linha.podeEstornar ? (
-                <BotaoEstorno pagamentoId={linha.id} />
+                <BotaoEstorno
+                  pagamentoId={linha.id}
+                  cartao={linha.forma === "Cartão"}
+                />
               ) : null}
             </li>
           ))}
@@ -114,7 +117,13 @@ export function HistoricoPagamento({
   );
 }
 
-function BotaoEstorno({ pagamentoId }: { pagamentoId: string }) {
+function BotaoEstorno({
+  pagamentoId,
+  cartao,
+}: {
+  pagamentoId: string;
+  cartao: boolean;
+}) {
   const router = useRouter();
   const [confirmar, setConfirmar] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -148,7 +157,9 @@ function BotaoEstorno({ pagamentoId }: { pagamentoId: string }) {
   return (
     <div className="mt-space-sm flex flex-col gap-space-sm">
       <p className="font-body-sm text-body-sm text-on-surface-variant">
-        A linha permanece no histórico e deixa de cobrir o aluno.
+        {cartao
+          ? "O valor inteiro volta para o cartão. A linha permanece no histórico e deixa de cobrir o aluno."
+          : "A linha permanece no histórico e deixa de cobrir o aluno."}
       </p>
       <div className="flex flex-wrap gap-space-sm">
         <button

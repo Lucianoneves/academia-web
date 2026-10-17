@@ -1,6 +1,7 @@
 -- Ordem 7 de 10. Aplicar depois de 06_class_schedules.sql.
 -- Políticas e permissões desta tabela ficam em 10_rls.sql.
--- Livro-caixa em dinheiro. A situação do aluno não fica gravada:
+-- Livro-caixa. Dinheiro na recepção e cartão confirmado pela Stripe.
+-- A situação do aluno não fica gravada:
 -- a aplicação recalcula a partir destas linhas.
 -- Não se edita nem se apaga lançamento. Erro se corrige com estorno.
 
@@ -13,10 +14,35 @@ create table public.payments (
   method text not null default 'dinheiro',
   kind text not null,
   reverses_payment_id uuid references public.payments (id) on delete restrict,
+  stripe_checkout_session_id text,
+  stripe_payment_intent_id text,
+  stripe_refund_id text,
   created_at timestamptz not null default pg_catalog.now(),
   constraint payments_amount_check check (amount_cents > 0),
-  constraint payments_method_check check (method = 'dinheiro'),
+  constraint payments_method_check check (method in ('dinheiro', 'cartao')),
   constraint payments_kind_check check (kind in ('recebimento', 'estorno')),
+  constraint payments_stripe_shape_check check (
+    (
+      method = 'dinheiro'
+      and stripe_checkout_session_id is null
+      and stripe_payment_intent_id is null
+      and stripe_refund_id is null
+    )
+    or (
+      method = 'cartao'
+      and kind = 'recebimento'
+      and stripe_checkout_session_id is not null
+      and stripe_payment_intent_id is not null
+      and stripe_refund_id is null
+    )
+    or (
+      method = 'cartao'
+      and kind = 'estorno'
+      and stripe_checkout_session_id is null
+      and stripe_payment_intent_id is null
+      and stripe_refund_id is not null
+    )
+  ),
   constraint payments_reversal_shape_check check (
     (kind = 'recebimento' and reverses_payment_id is null)
     or (kind = 'estorno' and reverses_payment_id is not null)
@@ -33,13 +59,34 @@ create unique index payments_one_reversal_uidx
   on public.payments (reverses_payment_id)
   where reverses_payment_id is not null;
 
+create unique index payments_stripe_session_uidx
+  on public.payments (stripe_checkout_session_id)
+  where stripe_checkout_session_id is not null;
+
+create unique index payments_stripe_intent_uidx
+  on public.payments (stripe_payment_intent_id)
+  where stripe_payment_intent_id is not null;
+
+create unique index payments_stripe_refund_uidx
+  on public.payments (stripe_refund_id)
+  where stripe_refund_id is not null;
+
 comment on table public.payments is
-  'Recebimentos e estornos em dinheiro. Um recebimento só tem um estorno.';
+  'Recebimentos e estornos em dinheiro ou cartão. Um recebimento só tem um estorno.';
 
 comment on column public.payments.amount_cents is 'Valor em centavos de real.';
 
 comment on column public.payments.reverses_payment_id is
   'Preenchido só no estorno. Aponta o recebimento anulado.';
+
+comment on column public.payments.stripe_checkout_session_id is
+  'Sessão do Checkout, só no recebimento de cartão. Impede gravar a mesma cobrança duas vezes.';
+
+comment on column public.payments.stripe_payment_intent_id is
+  'Cobrança da Stripe usada no reembolso do recebimento de cartão.';
+
+comment on column public.payments.stripe_refund_id is
+  'Reembolso da Stripe, só no estorno de cartão.';
 
 create or replace function private.payments_guard()
 returns trigger
@@ -61,8 +108,36 @@ begin
   v_today := private.today_sao_paulo();
   new.created_at := pg_catalog.now();
 
-  if new.method is distinct from 'dinheiro' then
-    raise exception 'neste recorte a forma de pagamento é dinheiro';
+  if new.method not in ('dinheiro', 'cartao') then
+    raise exception 'forma de pagamento inválida';
+  end if;
+
+  if new.method = 'dinheiro'
+    and (
+      new.stripe_checkout_session_id is not null
+      or new.stripe_payment_intent_id is not null
+      or new.stripe_refund_id is not null
+    )
+  then
+    raise exception 'dinheiro não guarda cobrança da Stripe';
+  end if;
+
+  if new.kind = 'recebimento'
+    and new.method = 'cartao'
+    and (
+      new.stripe_checkout_session_id is null
+      or new.stripe_payment_intent_id is null
+      or new.stripe_refund_id is not null
+    )
+  then
+    raise exception 'cobrança de cartão precisa da sessão da Stripe';
+  end if;
+
+  if new.kind = 'estorno'
+    and new.method = 'cartao'
+    and new.stripe_refund_id is null
+  then
+    raise exception 'estorno de cartão precisa do reembolso da Stripe';
   end if;
 
   if new.kind = 'recebimento' then
@@ -134,6 +209,10 @@ begin
 
   if v_origin.kind is distinct from 'recebimento' then
     raise exception 'só é possível estornar um recebimento';
+  end if;
+
+  if new.method is distinct from v_origin.method then
+    raise exception 'estorno deve usar a mesma forma do recebimento';
   end if;
 
   if exists (

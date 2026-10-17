@@ -14,23 +14,28 @@ export const metadata: Metadata = {
 
 export default function PagamentoAlunoPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ alunoId: string }>;
+  searchParams: Promise<{ checkout?: string }>;
 }) {
   return (
     <Suspense fallback={<CarregandoAcesso titulo="Abrindo o pagamento" />}>
-      <PagamentoAluno params={params} />
+      <PagamentoAluno params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
 
 async function PagamentoAluno({
   params,
+  searchParams,
 }: {
   params: Promise<{ alunoId: string }>;
+  searchParams: Promise<{ checkout?: string }>;
 }) {
   const admin = await requireAdmin();
   const { alunoId } = await params;
+  const { checkout } = await searchParams;
   const resultado = await pagamentoDoAluno(alunoId);
 
   if (!resultado.ok && resultado.motivo === "ausente") notFound();
@@ -55,6 +60,23 @@ async function PagamentoAluno({
             Abrir ficha
           </Link>
         </div>
+        {checkout === "enviado" ? (
+          <p
+            className="rounded-lg bg-secondary-fixed/15 px-space-md py-space-sm font-body-md text-body-md text-secondary-fixed"
+            role="status"
+          >
+            Cobrança enviada. O recebimento aparece aqui quando a Stripe
+            confirmar.
+          </p>
+        ) : null}
+        {checkout === "cancelado" ? (
+          <p
+            className="rounded-lg bg-surface-container px-space-md py-space-sm font-body-md text-body-md text-on-surface"
+            role="status"
+          >
+            Cobrança não concluída.
+          </p>
+        ) : null}
         <HistoricoPagamento
           alunoId={alunoId}
           ativo={resultado.ok ? resultado.ativo : false}
