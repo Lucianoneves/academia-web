@@ -7,19 +7,30 @@ import {
   useEffect,
   useState,
   useTransition,
+  type FocusEvent,
   type FormEvent,
   type ReactNode,
 } from "react";
 import { alterarSituacao, atualizarAluno } from "../_actions/atualizar-aluno";
 import { HistoricoPagamento } from "@/components/painel/historico-pagamento";
+import type { AvaliacaoFicha } from "@/app/painel/avaliacoes/_data-access/avaliacoes";
 import type { PagamentoAluno } from "@/app/painel/pagamentos/tipos";
 import type { MarcacaoFicha } from "@/app/painel/agenda/_data-access/agenda";
 import type { AlunoFicha } from "../../tipos";
+import { AvaliacaoAluno } from "./avaliacao";
 import {
+  alunoEdicaoSchema,
+  fieldErrors,
   formatarAltura,
-  planosCadastro,
+  type FieldErrors,
   type FormState,
 } from "@/lib/validacao";
+import {
+  dicaPlano,
+  escolhasDePlano,
+  rotuloEscolha,
+  type PlanoEscolha,
+} from "@/lib/plano-escolha";
 
 const initialState: FormState = { success: false };
 
@@ -31,6 +42,7 @@ function Campo({
   label,
   icon,
   error,
+  dica,
   children,
   className = "",
 }: {
@@ -38,6 +50,7 @@ function Campo({
   label: string;
   icon: string;
   error?: string;
+  dica?: string | null;
   children: ReactNode;
   className?: string;
 }) {
@@ -55,6 +68,11 @@ function Campo({
         </span>
         {children}
       </div>
+      {dica ? (
+        <p className="font-body-sm text-body-sm text-on-surface-variant">
+          {dica}
+        </p>
+      ) : null}
       {error ? (
         <p className="font-body-sm text-body-sm text-error" role="alert">
           {error}
@@ -69,11 +87,25 @@ export function FichaAluno({
   pagamento,
   marcacoes,
   agendaErro,
+  avaliacao,
+  avaliacaoErro,
+  hoje,
+  volta,
+  tentarDeNovo,
+  planos,
+  planosErro,
 }: {
   aluno: AlunoFicha;
   pagamento: PagamentoAluno | null;
   marcacoes: MarcacaoFicha[];
   agendaErro: string | null;
+  avaliacao: AvaliacaoFicha | null;
+  avaliacaoErro: string | null;
+  hoje: string;
+  volta: { href: string; rotulo: string };
+  tentarDeNovo: string;
+  planos: PlanoEscolha[];
+  planosErro: string | null;
 }) {
   const router = useRouter();
   const salvar = atualizarAluno.bind(null, aluno.id);
@@ -82,15 +114,74 @@ export function FichaAluno({
   const [confirmar, setConfirmar] = useState(false);
   const [situacao, setSituacao] = useState<FormState>(initialState);
   const [situacaoPendente, iniciarSituacao] = useTransition();
-  const erro = (campo: string) => state.errors?.[campo]?.[0];
+  const iniciais = {
+    nome: aluno.nome,
+    nascimento: aluno.nascimento,
+    telefone: aluno.telefone,
+    peso: String(aluno.peso),
+    altura: aluno.altura === null ? "" : formatarAltura(aluno.altura),
+    plano: aluno.plano ?? "",
+    restricoes: aluno.restricoes ?? "",
+  };
+  const [valores, setValores] = useState(iniciais);
+  const [tocados, setTocados] = useState<Record<string, boolean>>({});
+  const escolhas = escolhasDePlano(planos, aluno.plano);
+  const planoAtual = escolhas.find((plano) => plano.kind === valores.plano);
+  const parsed = alunoEdicaoSchema.safeParse(valores);
+  const errosCliente: FieldErrors = parsed.success
+    ? {}
+    : fieldErrors(parsed.error);
+  const erro = (campo: string) =>
+    (tocados[campo] ? errosCliente[campo]?.[0] : undefined) ??
+    state.errors?.[campo]?.[0];
 
   useEffect(() => {
     if (state.success) router.refresh();
   }, [router, state]);
 
+  function aoMudar(event: FormEvent<HTMLFormElement>) {
+    const data = new FormData(event.currentTarget);
+    setValores({
+      nome: String(data.get("nome") ?? ""),
+      nascimento: String(data.get("nascimento") ?? ""),
+      telefone: String(data.get("telefone") ?? ""),
+      peso: String(data.get("peso") ?? ""),
+      altura: String(data.get("altura") ?? ""),
+      plano: String(data.get("plano") ?? ""),
+      restricoes: String(data.get("restricoes") ?? ""),
+    });
+  }
+
+  function aoBlur(event: FocusEvent<HTMLFormElement>) {
+    const campo = (event.target as unknown as { name?: string }).name;
+    if (!campo) return;
+    setTocados((atual) => ({ ...atual, [campo]: true }));
+  }
+
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
+    const lido = {
+      nome: String(data.get("nome") ?? ""),
+      nascimento: String(data.get("nascimento") ?? ""),
+      telefone: String(data.get("telefone") ?? ""),
+      peso: String(data.get("peso") ?? ""),
+      altura: String(data.get("altura") ?? ""),
+      plano: String(data.get("plano") ?? ""),
+      restricoes: String(data.get("restricoes") ?? ""),
+    };
+    setValores(lido);
+    if (!alunoEdicaoSchema.safeParse(lido).success) {
+      setTocados({
+        nome: true,
+        nascimento: true,
+        telefone: true,
+        peso: true,
+        altura: true,
+        plano: true,
+      });
+      return;
+    }
     startTransition(() => {
       action(data);
     });
@@ -109,10 +200,10 @@ export function FichaAluno({
     <div className="flex w-full flex-col gap-space-lg p-space-lg">
       <div className="flex flex-col gap-space-sm">
         <Link
-          href="/painel/alunos"
+          href={volta.href}
           className="font-label-md text-label-md text-primary-fixed"
         >
-          Voltar para alunos
+          {volta.rotulo}
         </Link>
         <div className="flex flex-wrap items-center gap-space-sm">
           <h1 className="font-headline-lg text-headline-lg tracking-tight text-on-surface">
@@ -156,6 +247,8 @@ export function FichaAluno({
 
         <form
           onSubmit={onSubmit}
+          onChange={aoMudar}
+          onBlur={aoBlur}
           className="grid grid-cols-1 gap-space-md md:grid-cols-2 lg:grid-cols-4"
         >
           <Campo
@@ -243,7 +336,8 @@ export function FichaAluno({
             id="plano"
             label="Plano escolhido"
             icon="card_membership"
-            error={erro("plano")}
+            error={erro("plano") ?? planosErro ?? undefined}
+            dica={dicaPlano(planoAtual)}
             className="lg:col-span-2"
           >
             <select
@@ -253,9 +347,9 @@ export function FichaAluno({
               className={`${inputClass} scheme-dark`}
             >
               <option value="">Não informado</option>
-              {planosCadastro.map((plano) => (
-                <option key={plano.value} value={plano.value}>
-                  {plano.label}
+              {escolhas.map((plano) => (
+                <option key={plano.kind} value={plano.kind}>
+                  {rotuloEscolha(plano)}
                 </option>
               ))}
             </select>
@@ -284,7 +378,7 @@ export function FichaAluno({
           <div className="md:col-span-2 lg:col-span-4">
             <button
               type="submit"
-              disabled={pending}
+              disabled={pending || !parsed.success}
               className="flex h-12 items-center justify-center gap-2 rounded-lg bg-primary-fixed px-space-lg font-label-lg text-label-lg font-bold text-on-primary-fixed disabled:opacity-70"
             >
               {pending ? "Salvando..." : "Salvar alterações"}
@@ -395,21 +489,14 @@ export function FichaAluno({
             </ul>
           )}
         </section>
-        <BlocoFuturo titulo="Avaliação" />
+        <AvaliacaoAluno
+          alunoId={aluno.id}
+          avaliacao={avaliacao}
+          erro={avaliacaoErro}
+          hoje={hoje}
+          tentarDeNovo={tentarDeNovo}
+        />
       </div>
     </div>
-  );
-}
-
-function BlocoFuturo({ titulo }: { titulo: string }) {
-  return (
-    <section className="rounded-xl bg-surface-container-low p-space-lg">
-      <h2 className="font-headline-sm text-headline-sm font-bold text-on-surface">
-        {titulo}
-      </h2>
-      <p className="mt-space-sm font-body-md text-body-md text-on-surface-variant">
-        Ainda não há registros.
-      </p>
-    </section>
   );
 }

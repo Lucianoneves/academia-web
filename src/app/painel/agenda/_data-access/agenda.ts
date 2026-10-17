@@ -16,7 +16,9 @@ import {
   type TipoPlano,
 } from "@/lib/pagamento-situacao";
 import { createSessionClient } from "@/lib/supabase/server";
+import { rotuloSituacaoAvaliacao } from "@/lib/avaliacao";
 import { hojeSaoPaulo, planosCadastro } from "@/lib/validacao";
+import { rotulosAvaliacaoPorAluno } from "@/app/painel/avaliacoes/_data-access/avaliacoes";
 
 export type PessoaDia = {
   id: string;
@@ -40,6 +42,7 @@ export type AlunoAgenda = {
   id: string;
   nome: string;
   pagamento: string;
+  avaliacao: string;
 };
 
 export type MarcacaoFicha = {
@@ -119,32 +122,39 @@ export async function agendaDoDia(
 > {
   await requireAdmin();
   const supabase = await createSessionClient();
-  const [horarios, categorias, marcacoes, alunos, planos, pagamentos, usos] =
-    await Promise.all([
-      supabase
-        .from("class_schedules")
-        .select(
-          "id, weekday, starts_at, ends_at, category_id, capacity, active"
-        ),
-      supabase.from("class_categories").select("id, name"),
-      supabase
-        .from("appointments")
-        .select(
-          "id, student_id, schedule_id, appointment_date, status, consumed_payment_id, created_at"
-        )
-        .eq("appointment_date", data),
-      supabase.from("students").select("id, name, active"),
-      supabase.from("plans").select("id, kind"),
-      supabase
-        .from("payments")
-        .select(
-          "id, student_id, plan_id, paid_on, kind, reverses_payment_id, created_at"
-        ),
-      supabase
-        .from("appointments")
-        .select("consumed_payment_id")
-        .eq("status", "marcado"),
-    ]);
+  const [
+    horarios,
+    categorias,
+    marcacoes,
+    alunos,
+    planos,
+    pagamentos,
+    usos,
+    avaliacoes,
+  ] = await Promise.all([
+    supabase
+      .from("class_schedules")
+      .select("id, weekday, starts_at, ends_at, category_id, capacity, active"),
+    supabase.from("class_categories").select("id, name"),
+    supabase
+      .from("appointments")
+      .select(
+        "id, student_id, schedule_id, appointment_date, status, consumed_payment_id, created_at"
+      )
+      .eq("appointment_date", data),
+    supabase.from("students").select("id, name, active"),
+    supabase.from("plans").select("id, kind"),
+    supabase
+      .from("payments")
+      .select(
+        "id, student_id, plan_id, paid_on, kind, reverses_payment_id, created_at"
+      ),
+    supabase
+      .from("appointments")
+      .select("consumed_payment_id")
+      .eq("status", "marcado"),
+    rotulosAvaliacaoPorAluno(),
+  ]);
 
   if (
     horarios.error ||
@@ -152,7 +162,8 @@ export async function agendaDoDia(
     marcacoes.error ||
     alunos.error ||
     planos.error ||
-    pagamentos.error
+    pagamentos.error ||
+    !avaliacoes.ok
   ) {
     return { ok: false, erro: "Não foi possível carregar a agenda." };
   }
@@ -218,6 +229,9 @@ export async function agendaDoDia(
         id: aluno.id,
         nome: aluno.name,
         pagamento: rotuloSituacao(analise.situacao),
+        avaliacao:
+          avaliacoes.rotulos.get(aluno.id) ??
+          rotuloSituacaoAvaliacao("sem_avaliacao"),
       };
     })
     .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));

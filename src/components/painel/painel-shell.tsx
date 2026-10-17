@@ -3,7 +3,14 @@ import type { ReactNode } from "react";
 import { sair } from "@/app/painel/_actions/sair";
 
 export type AreaPainel =
-  "inicio" | "novo" | "lista" | "planos" | "pagamentos" | "horarios" | "agenda";
+  | "inicio"
+  | "novo"
+  | "lista"
+  | "planos"
+  | "pagamentos"
+  | "horarios"
+  | "agenda"
+  | "avaliacoes";
 
 type ItemMenu = {
   label: string;
@@ -54,7 +61,8 @@ const menu: ItemMenu[] = [
   {
     label: "Avaliações Médicas",
     icon: "cardiology",
-    href: "/painel#avaliacoes",
+    href: "/painel/avaliacoes",
+    area: "avaliacoes",
   },
   {
     label: "Resumo Financeiro",

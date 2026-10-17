@@ -32,7 +32,9 @@ function FormularioMarcar({
   const [state, action] = useActionState(marcarAluno, initialState);
   const [pending, startTransition] = useTransition();
   const [alunoId, setAlunoId] = useState("");
-  const aviso = alunos.find((aluno) => aluno.id === alunoId)?.pagamento;
+  const escolhido = alunos.find((aluno) => aluno.id === alunoId);
+  const aviso = escolhido?.pagamento;
+  const avaliacao = escolhido?.avaliacao;
 
   useEffect(() => {
     if (!state.success) return;
@@ -93,6 +95,11 @@ function FormularioMarcar({
       {aviso ? (
         <p className="font-body-sm text-body-sm text-on-surface-variant">
           Pagamento: {aviso}. Isso não impede a marcação.
+        </p>
+      ) : null}
+      {avaliacao ? (
+        <p className="font-body-sm text-body-sm text-on-surface-variant">
+          Avaliação: {avaliacao}. Isso não impede a marcação.
         </p>
       ) : null}
       {state.errors?.aluno?.[0] ? (

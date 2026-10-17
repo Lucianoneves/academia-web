@@ -139,6 +139,7 @@ Decisões confirmadas e suposições estão marcadas. Suposição é o que este 
 2. O sistema calcula a validade para 6 meses depois.
 3. No início do painel e na ficha, o aluno aparece **em dia** até 15 dias antes do vencimento, **a vencer** nos 15 dias finais e **vencida** depois da validade.
 4. Aluno sem registro permanece **sem avaliação**.
+5. Na ficha, o administrador pode marcar um dia (hoje ou futuro) e uma hora de início. A marcação só avisa. A situação não muda. A fila mostra o dia e a hora só de quem já está nela.
 
 ## 9. Critérios de aceite
 
@@ -149,7 +150,7 @@ Decisões confirmadas e suposições estão marcadas. Suposição é o que este 
 - O administrador consegue criar um horário semanal com categoria e vagas.
 - O administrador consegue agendar um aluno quando ainda há vaga e o sistema recusa quando a data está lotada.
 - O sistema deve permitir agendar com pagamento atrasado ou avaliação vencida, e deve mostrar esses avisos.
-- O administrador consegue registrar uma avaliação e ver o alerta **a vencer**, **vencida** ou **sem avaliação**.
+- O administrador consegue registrar uma avaliação e ver o alerta **a vencer**, **vencida** ou **sem avaliação**. Consegue marcar, na ficha, um dia e uma hora futuros que só avisam, sem mudar esse alerta.
 - O início do painel deve resumir alunos, pagamentos em dia, pagamentos atrasados, agendamentos de hoje e avaliações que pedem atenção.
 - Sem sessão válida, o sistema deve mostrar a tela de acesso e não as áreas do painel.
 - O primeiro administrador consegue criar a conta com nome, e-mail e senha. Depois disso, o cadastro público não fica disponível.
@@ -501,33 +502,40 @@ Specs:
 ### Spec 08 — Avaliação médica e alertas
 
 - **Fase:** 4
-- **Objetivo (o quê):** O administrador registra o histórico de avaliação de cada aluno e vê quem está a vencer, vencido ou sem avaliação.
-- **Intenção (por quê):** A academia precisa saber quando chamar o aluno de novo, sem impedir a aula. O alerta é um lembrete visual, não uma trava.
-- **Contexto:** Parte da ficha do aluno (Spec 02) e ganha uma área própria no menu para a fila de alertas. A agenda (Spec 07) passa a mostrar o aviso correspondente na hora de marcar, ainda sem bloquear.
+- **Objetivo (o quê):** O administrador registra o histórico de avaliação de cada aluno, vê quem está a vencer, vencido ou sem avaliação, e pode marcar um dia e uma hora para avisar.
+- **Intenção (por quê):** A academia precisa saber quando chamar o aluno de novo, sem impedir a aula. O alerta é um lembrete visual, não uma trava. A marcação avisa o dia e a hora; não é o exame feito.
+- **Contexto:** Parte da ficha do aluno (Spec 02) e ganha uma área própria no menu para a fila de alertas. A agenda (Spec 07) passa a mostrar o aviso correspondente na hora de marcar aula, ainda sem bloquear, e sem a data marcada da avaliação.
 - **Atores:** Administrador.
-- **Descrição do comportamento:** Na ficha do aluno, o administrador registra uma avaliação com a data e as observações. O sistema calcula a validade para 6 meses depois dessa data e mostra os dois. O histórico lista da mais recente para a mais antiga. Não se apaga e não se edita; uma correção é um novo registro. A situação da avaliação usa a data de hoje e o registro mais recente: **em dia** quando faltam mais de 15 dias para a validade, **a vencer** quando faltam 15 dias ou menos e a validade ainda não passou, **vencida** quando hoje é depois da validade, **sem avaliação** quando não há registro. A área Avaliação médica lista os alunos ativos nessas situações e filtra por a vencer, vencida e sem avaliação. Aluno inativo não entra nessa fila e o histórico dele continua na ficha. Na agenda, ao escolher o aluno, o aviso mostra a situação da avaliação em uma linha. Confirmar o agendamento continua possível em qualquer situação.
-- **Entradas e saídas:** Entradas: aluno, data da avaliação, observações. Saídas: histórico do aluno, validade calculada, situação, fila filtrada de alertas, aviso na agenda.
-- **Dados/entidades envolvidos (conceitual):** Avaliação médica: aluno, data da avaliação, observações, validade (data da avaliação mais 6 meses). Situação derivada do registro mais recente: em dia, a vencer, vencida ou sem avaliação.
-- **Estados e transições:** Sem avaliação → em dia, a vencer ou vencida conforme a data do primeiro registro e o dia de hoje. Um registro mais novo substitui o anterior só no cálculo da situação; o antigo permanece no histórico. Não há transição manual da situação.
-- **Regras de negócio:** Regras 15 e 16. A validade não é digitada. O alerta não bloqueia agenda (Regra 12). Observações podem ficar vazias. A data da avaliação não pode ser futura.
-- **Validações:** Aluno obrigatório. Data obrigatória, hoje ou no passado. Não permite dois registros idênticos do mesmo aluno na mesma data com as mesmas observações; se a data for a mesma e as observações mudarem, salva como outro registro do mesmo dia, o mais recente na ordem de inclusão vence a situação.
+- **Descrição do comportamento:** Na ficha do aluno, o administrador registra uma avaliação com a data e as observações. O sistema calcula a validade para 6 meses depois dessa data e mostra os dois. O histórico lista da mais recente para a mais antiga. Não se apaga e não se edita; uma correção é um novo registro. A situação da avaliação usa a data de hoje e o registro mais recente: **em dia** quando faltam mais de 15 dias para a validade, **a vencer** quando faltam 15 dias ou menos e a validade ainda não passou, **vencida** quando hoje é depois da validade, **sem avaliação** quando não há registro. A área Avaliação médica lista os alunos ativos nessas situações e filtra por a vencer, vencida e sem avaliação. Aluno inativo não entra nessa fila e o histórico dele continua na ficha. Na agenda, ao escolher o aluno, o aviso mostra a situação da avaliação em uma linha. Confirmar o agendamento da aula continua possível em qualquer situação. Na ficha, o administrador também marca uma avaliação futura: um dia e uma hora de início. Cada aluno tem uma marcação. Marcar de novo substitui a anterior. Limpar apaga o aviso e não cria exame. Registrar uma avaliação também apaga a marcação. A marcação não muda a situação e não vira exame no dia. A fila mostra o dia e a hora ao lado da situação de quem já está nela. Aluno em dia não entra na fila por ter marcação; a data fica na ficha até ele precisar de atenção. A agenda de aulas não mostra essa marcação.
+- **Entradas e saídas:** Entradas: aluno, data da avaliação, observações; e, à parte, dia e hora da marcação. Saídas: histórico do aluno, validade calculada, situação, fila filtrada de alertas com dia e hora quando houver marcação, aviso da situação na agenda de aulas.
+- **Dados/entidades envolvidos (conceitual):** Avaliação médica: aluno, data da avaliação, observações, validade (data da avaliação mais 6 meses). Situação derivada do registro mais recente: em dia, a vencer, vencida ou sem avaliação. Marcação: aluno, dia e hora de início. Uma por aluno. Não tem hora de fim e não ocupa vaga de aula.
+- **Estados e transições:** Sem avaliação → em dia, a vencer ou vencida conforme a data do primeiro registro e o dia de hoje. Um registro mais novo substitui o anterior só no cálculo da situação; o antigo permanece no histórico. Não há transição manual da situação. A marcação nasce ao salvar dia e hora, é substituída por outra, e some ao limpar ou ao registrar uma avaliação. Se o dia marcado passar sem registro, ela continua visível e a situação não muda.
+- **Regras de negócio:** Regras 15 e 16. A validade não é digitada. O alerta não bloqueia agenda (Regra 12). Observações podem ficar vazias. A data da avaliação não pode ser futura. A marcação é hoje ou um dia futuro, com hora de início obrigatória. Dia no passado não salva. Hora de hoje que já passou salva. Dois alunos podem no mesmo dia. Dois alunos não podem na mesma data e na mesma hora de início; a segunda não salva. O mesmo aluno pode permanecer na hora que já é dele. 14:30 e 14:45 no mesmo dia podem.
+- **Validações:** Aluno obrigatório. Data da avaliação obrigatória, hoje ou no passado. Não permite dois registros idênticos do mesmo aluno na mesma data com as mesmas observações; se a data for a mesma e as observações mudarem, salva como outro registro do mesmo dia, o mais recente na ordem de inclusão vence a situação. Marcação: dia obrigatório, hoje ou futuro; hora obrigatória, no formato da academia. Sem hora de fim.
 - **Fluxo do usuário (passo a passo):**
   1. O administrador abre a ficha do aluno ou a área Avaliação médica.
-  2. Registra data e observações.
-  3. Vê a validade e a situação.
-  4. Na área de avaliação, filtra quem está a vencer, vencido ou sem avaliação.
-  5. Na agenda, vê o aviso ao marcar e segue se quiser.
-- **Casos de borda e erros:** Aluno sem avaliação: a ficha mostra sem avaliação e a fila o inclui nesse filtro. Data futura: não salva. Validade que cai em mês sem o mesmo dia: a validade vai para o último dia daquele mês, 6 meses depois. Vários registros: a situação usa só o mais recente e o histórico mostra todos. Aluno inativo some da fila e permanece consultável na ficha.
-- **Impacto no existente:** A ficha do aluno deixa o bloco de avaliação vazio e passa a ter histórico. A agenda passa a exibir o aviso de avaliação além do aviso de pagamento.
+  2. Registra data e observações, ou marca dia e hora.
+  3. Vê a validade e a situação. Se houver marcação, vê o dia e a hora.
+  4. Na área de avaliação, filtra quem está a vencer, vencido ou sem avaliação e lê a marcação de quem já está na lista.
+  5. Na agenda, vê o aviso da situação ao marcar aula e segue se quiser.
+- **Casos de borda e erros:** Aluno sem avaliação: a ficha mostra sem avaliação e a fila o inclui nesse filtro. Data futura no exame: não salva. Dia passado na marcação: não salva. Validade que cai em mês sem o mesmo dia: a validade vai para o último dia daquele mês, 6 meses depois. Vários registros: a situação usa só o mais recente e o histórico mostra todos. Aluno inativo some da fila e permanece consultável na ficha. Segunda marcação no mesmo dia e na mesma hora: não salva. Aluno em dia com marcação: fica de fora da fila. Dia da marcação que já passou sem exame: a marcação continua e a situação não muda.
+- **Impacto no existente:** A ficha do aluno deixa o bloco de avaliação vazio e passa a ter histórico e marcação. A agenda passa a exibir o aviso de avaliação além do aviso de pagamento, sem o dia e a hora marcados.
 - **Critérios de aceite (Dado/Quando/Então):**
   - Dado um aluno sem registros, Quando a ficha ou a fila abre, Então a situação é sem avaliação.
   - Dado uma avaliação com data de hoje, Quando o administrador salva, Então a validade exibida é 6 meses depois e a situação é em dia.
   - Dado uma validade que ocorre em 10 dias, Quando a fila carrega, Então o aluno aparece como a vencer.
   - Dado uma validade que já passou, Quando a fila carrega, Então o aluno aparece como vencida.
   - Dado um aluno vencido com vaga na agenda, Quando o administrador confirma o agendamento, Então a aula é marcada e o aviso de avaliação vencida foi mostrado.
-- **Definição de pronto:** Cada aluno tem histórico, a situação bate com a regra dos 6 meses e dos 15 dias, a fila filtra os alertas e a agenda mostra o aviso sem bloquear.
-- **Dependências:** Spec 02 — ficha do aluno. Spec 01 — menu. Spec 10 — só administrador autenticado. Spec 11 — o histórico permanece e a fila atualiza depois de gravar. Spec 07 — para o aviso na hora de agendar. Se a agenda ainda não estiver pronta, a avaliação funciona na ficha e na fila mesmo assim.
-- **Fora do escopo desta spec:** Anexo de exame, nome do médico como cadastro próprio, aviso por e-mail ou WhatsApp, e impedir agendamento.
+  - Dado um aluno vencido, Quando o administrador marca hoje ou um dia futuro com hora, Então a situação continua vencida e a fila mostra o dia e a hora.
+  - Dado essa marcação, Quando outro aluno marca a mesma data e a mesma hora, Então a segunda não salva.
+  - Dado 14:30 ocupado, Quando outro aluno marca 14:45 no mesmo dia, Então a marcação salva.
+  - Dado uma marcação, Quando o administrador registra a avaliação na ficha, Então a marcação some e a validade usa a data registrada.
+  - Dado uma marcação, Quando o administrador limpa na ficha, Então a marcação some e a situação não muda.
+  - Dado um aluno em dia com marcação, Quando a fila abre, Então ele não aparece.
+  - Dado um dia no passado, Quando tenta marcar, Então não salva.
+- **Definição de pronto:** Cada aluno tem histórico, a situação bate com a regra dos 6 meses e dos 15 dias, a fila filtra os alertas, a marcação avisa dia e hora sem mudar a situação, e a agenda mostra o aviso da situação sem bloquear.
+- **Dependências:** Spec 02 — ficha do aluno. Spec 01 — menu. Spec 10 — só administrador autenticado. Spec 11 — o histórico e a marcação permanecem e a fila atualiza depois de gravar. Spec 07 — para o aviso na hora de agendar aula. Se a agenda ainda não estiver pronta, a avaliação funciona na ficha e na fila mesmo assim.
+- **Fora do escopo desta spec:** Anexo de exame, nome do médico como cadastro próprio, aviso por e-mail ou WhatsApp, impedir agendamento de aula, hora de fim, vaga, filtro só de marcações, e transformar a marcação em exame no dia.
 
 ### Spec 09 — Resumo do dashboard
 
