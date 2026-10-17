@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createSessionClient } from "@/lib/supabase/server";
+import { PLANO_FORA_DE_VENDA } from "@/lib/plano-escolha";
+import { planoEstaAVenda } from "@/lib/plano-venda";
 import {
   alunoEdicaoSchema,
   fieldErrors,
@@ -43,6 +45,26 @@ export async function atualizarAluno(
   }
 
   const supabase = await createSessionClient();
+  const atual = await supabase
+    .from("students")
+    .select("chosen_plan")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (atual.error) return { success: false, message: FALHA };
+  if (!atual.data) return { success: false, message: "Aluno não encontrado." };
+
+  if (parsed.data.plano && parsed.data.plano !== atual.data.chosen_plan) {
+    const venda = await planoEstaAVenda(parsed.data.plano);
+    if (!venda.ok) return { success: false, message: FALHA };
+    if (!venda.venda) {
+      return {
+        success: false,
+        errors: { plano: [PLANO_FORA_DE_VENDA] },
+      };
+    }
+  }
+
   const { data, error } = await supabase
     .from("students")
     .update({

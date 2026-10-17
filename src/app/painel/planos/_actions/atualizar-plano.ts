@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createSessionClient } from "@/lib/supabase/server";
+import { ATIVAR_SEM_PRECO } from "@/lib/plano-escolha";
 import { fieldErrors, precoPlanoSchema, type FormState } from "@/lib/validacao";
 
 const FALHA = "Não foi possível salvar o plano. Tente de novo.";
@@ -16,6 +17,8 @@ function idValido(id: string) {
 function atualizarListas() {
   revalidatePath("/painel/planos");
   revalidatePath("/painel/pagamentos");
+  revalidatePath("/painel/alunos/novo");
+  revalidatePath("/painel/alunos/[id]", "page");
 }
 
 export async function salvarPreco(
@@ -64,6 +67,20 @@ export async function alterarDisponibilidade(
   }
 
   const supabase = await createSessionClient();
+  const plano = await supabase
+    .from("plans")
+    .select("price_cents")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (plano.error || !plano.data) {
+    return { success: false, message: "Plano não encontrado." };
+  }
+
+  if (ativo && plano.data.price_cents <= 0) {
+    return { success: false, message: ATIVAR_SEM_PRECO };
+  }
+
   const { data, error } = await supabase
     .from("plans")
     .update({ active: ativo })

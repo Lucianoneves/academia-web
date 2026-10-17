@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createSessionClient } from "@/lib/supabase/server";
+import { PLANO_FORA_DE_VENDA } from "@/lib/plano-escolha";
+import { planoEstaAVenda } from "@/lib/plano-venda";
 import { alunoSchema, fieldErrors, type FormState } from "@/lib/validacao";
 
 const FALHA = "Não foi possível salvar o aluno. Tente de novo.";
@@ -26,6 +28,15 @@ export async function criarAluno(
 
   if (!parsed.success) {
     return { success: false, errors: fieldErrors(parsed.error) };
+  }
+
+  const venda = await planoEstaAVenda(parsed.data.plano);
+  if (!venda.ok) return { success: false, message: FALHA };
+  if (!venda.venda) {
+    return {
+      success: false,
+      errors: { plano: [PLANO_FORA_DE_VENDA] },
+    };
   }
 
   const supabase = await createSessionClient();

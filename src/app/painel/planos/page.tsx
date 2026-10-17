@@ -36,9 +36,9 @@ async function Planos() {
             Planos ofertados
           </h1>
           <p className="mt-space-xs max-w-2xl font-body-md text-body-md text-on-surface-variant">
-            Avulso, mensal, trimestral, semestral e anual. O preço salvo é o
-            valor sugerido no pagamento. O plano escolhido no cadastro do aluno
-            não muda.
+            Avulso, mensal, trimestral, semestral e anual. O preço salvo aparece
+            ao lado do plano no cadastro, na ficha e como valor sugerido no
+            pagamento. O plano escolhido no aluno não muda quando o preço muda.
           </p>
         </div>
 
