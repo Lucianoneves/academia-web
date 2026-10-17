@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
+import { ProgressoNavegacao } from "@/components/progresso-navegacao";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -32,7 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="min-h-full bg-background font-body-md text-body-md text-on-surface">
-        {children}
+        <ProgressoNavegacao>{children}</ProgressoNavegacao>
       </body>
     </html>
   );

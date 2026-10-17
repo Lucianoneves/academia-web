@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState, useTransition, type FormEvent } from "react";
 import { criarAdministrador } from "@/app/_actions/criar-administrador";
+import { useBarraNaTroca } from "@/components/progresso-navegacao";
 import type { FormState } from "@/lib/validacao";
 
 const initialState: FormState = { success: false };
@@ -67,11 +68,16 @@ function PasswordField({
 export function CadastroAdministrador() {
   const [state, action] = useActionState(criarAdministrador, initialState);
   const [pending, startTransition] = useTransition();
+  const iniciarBarra = useBarraNaTroca(
+    pending,
+    Boolean(state.message) || state.errors != null
+  );
   const erro = (campo: string) => state.errors?.[campo]?.[0];
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
+    iniciarBarra();
     startTransition(() => {
       action(data);
     });

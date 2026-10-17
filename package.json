@@ -9,6 +9,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@bprogress/next": "^3.2.12",
     "@stripe/stripe-js": "^10.1.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.3",

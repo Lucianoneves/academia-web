@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState, useTransition, type FormEvent } from "react";
 import { entrar } from "@/app/login/_actions/entrar";
+import { useBarraNaTroca } from "@/components/progresso-navegacao";
 import type { FormState } from "@/lib/validacao";
 
 const initialState: FormState = { success: false };
@@ -21,6 +22,10 @@ export function LoginAdministrador({
 }) {
   const [state, action] = useActionState(entrar, initialState);
   const [pending, startTransition] = useTransition();
+  const iniciarBarra = useBarraNaTroca(
+    pending,
+    Boolean(state.message) || state.errors != null
+  );
   const [visible, setVisible] = useState(false);
   const [remember, setRemember] = useState(true);
   const [sessionVisible, setSessionVisible] = useState(true);
@@ -88,6 +93,7 @@ export function LoginAdministrador({
             onSubmit={(event: FormEvent<HTMLFormElement>) => {
               event.preventDefault();
               const data = new FormData(event.currentTarget);
+              iniciarBarra();
               startTransition(() => {
                 action(data);
               });
