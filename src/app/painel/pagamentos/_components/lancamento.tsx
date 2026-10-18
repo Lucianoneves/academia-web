@@ -17,12 +17,8 @@ import {
   type FieldErrors,
   type FormState,
 } from "@/lib/validacao";
-import { iniciarCheckout } from "../_actions/cobrar-cartao";
 import { lancarPagamento } from "../_actions/lancar-pagamento";
 import type { OpcoesLancamento } from "../tipos";
-
-const AVISO_TESTE =
-  "Cobrança no cartão disponível só com a chave de teste da Stripe.";
 
 const initialState: FormState = { success: false };
 
@@ -32,24 +28,19 @@ const inputClass =
 export function FormularioLancamento({
   opcoes,
   alunoInicial,
-  cartaoDisponivel,
 }: {
   opcoes: OpcoesLancamento;
   alunoInicial: string;
-  cartaoDisponivel: boolean;
 }) {
   const router = useRouter();
   const [dinheiro, lancar] = useActionState(lancarPagamento, initialState);
-  const [cartao, cobrar] = useActionState(iniciarCheckout, initialState);
   const [pending, startTransition] = useTransition();
   const alunoExiste = opcoes.alunos.some((aluno) => aluno.id === alunoInicial);
   const [alunoId, setAlunoId] = useState(alunoExiste ? alunoInicial : "");
   const [planoId, setPlanoId] = useState("");
   const [valor, setValor] = useState("");
   const [data, setData] = useState(opcoes.hoje);
-  const [forma, setForma] = useState<"dinheiro" | "cartao">("dinheiro");
   const [tocados, setTocados] = useState<Record<string, boolean>>({});
-  const noCartao = forma === "cartao";
   const parsed = lancamentoSchema.safeParse({
     aluno: alunoId,
     plano: planoId,
@@ -59,28 +50,16 @@ export function FormularioLancamento({
   const errosCliente: FieldErrors = parsed.success
     ? {}
     : fieldErrors(parsed.error);
-  const state = noCartao ? cartao : dinheiro;
-  const erro = (campo: string) => {
-    if (noCartao && (campo === "valor" || campo === "data")) return undefined;
-    return (
-      (tocados[campo] ? errosCliente[campo]?.[0] : undefined) ??
-      state.errors?.[campo]?.[0]
-    );
-  };
+  const erro = (campo: string) =>
+    (tocados[campo] ? errosCliente[campo]?.[0] : undefined) ??
+    dinheiro.errors?.[campo]?.[0];
   const planoSelecionado = opcoes.planos.find((plano) => plano.id === planoId);
-  const valido = noCartao
-    ? Boolean(alunoId && planoId) && cartaoDisponivel
-    : parsed.success;
 
   function tocar(campo: string) {
     setTocados((atual) => ({ ...atual, [campo]: true }));
   }
 
   useEffect(() => {
-    if (cartao.redirect) {
-      window.location.assign(cartao.redirect);
-      return;
-    }
     if (!dinheiro.success) return;
     setAlunoId("");
     setPlanoId("");
@@ -88,7 +67,7 @@ export function FormularioLancamento({
     setData(opcoes.hoje);
     setTocados({});
     router.refresh();
-  }, [cartao.redirect, dinheiro, opcoes.hoje, router]);
+  }, [dinheiro, opcoes.hoje, router]);
 
   function aoMudarPlano(id: string) {
     setPlanoId(id);
@@ -96,25 +75,8 @@ export function FormularioLancamento({
     setValor(plano ? centavosParaCampo(plano.precoCentavos) : "");
   }
 
-  function escolherForma(proxima: "dinheiro" | "cartao") {
-    setForma(proxima);
-    if (proxima === "cartao" && planoSelecionado) {
-      setValor(centavosParaCampo(planoSelecionado.precoCentavos));
-    }
-  }
-
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (noCartao) {
-      if (!cartaoDisponivel || !alunoId || !planoId) {
-        setTocados({ aluno: true, plano: true });
-        return;
-      }
-      startTransition(() => {
-        cobrar(new FormData(event.currentTarget));
-      });
-      return;
-    }
     if (!parsed.success) {
       setTocados({ aluno: true, plano: true, valor: true, data: true });
       return;
@@ -145,33 +107,6 @@ export function FormularioLancamento({
       onSubmit={onSubmit}
       className="grid grid-cols-1 gap-space-md md:grid-cols-2"
     >
-      <div className="flex flex-wrap gap-space-sm md:col-span-2">
-        <button
-          type="button"
-          aria-pressed={forma === "dinheiro"}
-          onClick={() => escolherForma("dinheiro")}
-          className={
-            forma === "dinheiro"
-              ? "h-12 rounded-lg bg-primary-fixed px-space-lg font-label-lg text-label-lg font-bold text-on-primary-fixed"
-              : "h-12 rounded-lg bg-surface-container px-space-lg font-label-lg text-label-lg text-on-surface"
-          }
-        >
-          Dinheiro
-        </button>
-        <button
-          type="button"
-          aria-pressed={forma === "cartao"}
-          onClick={() => escolherForma("cartao")}
-          className={
-            forma === "cartao"
-              ? "h-12 rounded-lg bg-primary-fixed px-space-lg font-label-lg text-label-lg font-bold text-on-primary-fixed"
-              : "h-12 rounded-lg bg-surface-container px-space-lg font-label-lg text-label-lg text-on-surface"
-          }
-        >
-          Cartão
-        </button>
-      </div>
-
       <Campo id="aluno" label="Aluno" erro={erro("aluno")}>
         <select
           id="aluno"
@@ -226,66 +161,49 @@ export function FormularioLancamento({
           inputMode="decimal"
           required
           value={valor}
-          readOnly={noCartao}
-          onChange={(event) => {
-            if (!noCartao) setValor(event.target.value);
-          }}
+          onChange={(event) => setValor(event.target.value)}
           onBlur={() => tocar("valor")}
           placeholder="0,00"
           className={inputClass}
         />
       </Campo>
 
-      {noCartao ? null : (
-        <Campo id="data" label="Data" erro={erro("data")}>
-          <input
-            id="data"
-            name="data"
-            type="date"
-            required
-            max={opcoes.hoje}
-            value={data}
-            onChange={(event) => setData(event.target.value)}
-            onBlur={() => tocar("data")}
-            className={`${inputClass} scheme-dark`}
-          />
-        </Campo>
-      )}
+      <Campo id="data" label="Data" erro={erro("data")}>
+        <input
+          id="data"
+          name="data"
+          type="date"
+          required
+          max={opcoes.hoje}
+          value={data}
+          onChange={(event) => setData(event.target.value)}
+          onBlur={() => tocar("data")}
+          className={`${inputClass} scheme-dark`}
+        />
+      </Campo>
 
       <div className="flex flex-col gap-space-sm md:col-span-2">
         <p className="font-body-sm text-body-sm text-on-surface-variant">
-          {noCartao
-            ? "No cartão o valor fica no preço do plano. A linha aparece quando a Stripe confirmar."
-            : "No dinheiro o valor sugerido acompanha o plano e pode ser ajustado."}
+          A forma é dinheiro. O valor sugerido acompanha o plano e pode ser
+          ajustado.
         </p>
-        {noCartao && !cartaoDisponivel ? (
-          <p className="font-body-sm text-body-sm text-error" role="alert">
-            {AVISO_TESTE}
-          </p>
-        ) : null}
         <button
           type="submit"
-          disabled={pending || !valido}
+          disabled={pending || !parsed.success}
           className="h-12 w-fit rounded-lg bg-primary-fixed px-space-lg font-label-lg text-label-lg font-bold text-on-primary-fixed disabled:opacity-70"
         >
-          {pending
-            ? noCartao
-              ? "Abrindo..."
-              : "Lançando..."
-            : noCartao
-              ? "Cobrar no cartão"
-              : "Confirmar pagamento"}
+          {pending ? "Lançando..." : "Confirmar pagamento"}
         </button>
-        {state.message ? (
+        {dinheiro.message ? (
           <p
             className={
-              state.success
+              dinheiro.success
                 ? "font-body-sm text-body-sm text-secondary-fixed"
                 : "font-body-sm text-body-sm text-error"
             }
             role="status"
           >
-            {state.message}
+            {dinheiro.message}
           </p>
         ) : null}
       </div>

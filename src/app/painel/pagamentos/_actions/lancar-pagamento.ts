@@ -9,9 +9,12 @@ import {
   lancamentoSchema,
   type FormState,
 } from "@/lib/validacao";
+import { aulaJaComecou } from "@/lib/agenda";
 import { clienteStripeTeste } from "@/lib/stripe-teste";
 
 const FALHA = "Não foi possível salvar o pagamento. Tente de novo.";
+const AGUARDE_CANCELAMENTO =
+  "Cancele a aula que consumiu este crédito antes de estornar.";
 let gravacao = 0;
 
 function idValido(id: string) {
@@ -51,6 +54,51 @@ function mensagemBanco(texto: string) {
   }
 
   return FALHA;
+}
+
+async function estornoBloqueadoPorAula(
+  supabase: Awaited<ReturnType<typeof createSessionClient>>,
+  origem: { id: string; plan_id: string }
+): Promise<FormState | null> {
+  const plano = await supabase
+    .from("plans")
+    .select("kind")
+    .eq("id", origem.plan_id)
+    .maybeSingle();
+
+  if (plano.error) return { success: false, message: FALHA };
+  if (plano.data?.kind !== "avulso") return null;
+
+  const usos = await supabase
+    .from("appointments")
+    .select("appointment_date, schedule_id")
+    .eq("consumed_payment_id", origem.id)
+    .eq("status", "marcado");
+
+  if (usos.error) return { success: false, message: FALHA };
+  if (!usos.data?.length) return null;
+
+  const horarios = await supabase
+    .from("class_schedules")
+    .select("id, starts_at")
+    .in(
+      "id",
+      usos.data.map((uso) => uso.schedule_id)
+    );
+
+  if (horarios.error) return { success: false, message: FALHA };
+
+  const inicioPorId = new Map(
+    (horarios.data ?? []).map((horario) => [horario.id, horario.starts_at])
+  );
+  const aguardando = usos.data.some((uso) => {
+    const inicio = inicioPorId.get(uso.schedule_id);
+    if (!inicio) return true;
+    return !aulaJaComecou(String(uso.appointment_date).slice(0, 10), inicio);
+  });
+
+  if (!aguardando) return null;
+  return { success: false, message: AGUARDE_CANCELAMENTO };
 }
 
 export async function lancarPagamento(
@@ -150,6 +198,9 @@ export async function estornarPagamento(id: string): Promise<FormState> {
       message: "Só é possível estornar um recebimento.",
     };
   }
+
+  const bloqueio = await estornoBloqueadoPorAula(supabase, origem.data);
+  if (bloqueio) return bloqueio;
 
   const existente = await supabase
     .from("payments")
