@@ -58,9 +58,8 @@ export async function listarAlunos(filtro: { q: string; ativos: boolean }) {
   const supabase = await createSessionClient();
   let consulta = supabase
     .from("students")
-    .select("id, name, phone, active")
-    .eq("active", filtro.ativos)
-    .order("name", { ascending: true });
+    .select("id, name, phone, active, created_at")
+    .eq("active", filtro.ativos);
 
   const termo = termoBusca(filtro.q);
   const digitos = termo.replace(/\D/g, "");
@@ -77,18 +76,34 @@ export async function listarAlunos(filtro: { q: string; ativos: boolean }) {
     throw new Error("Não foi possível listar os alunos.");
   }
 
-  const alunos: AlunoLista[] = (data ?? []).map((aluno) => ({
-    id: aluno.id,
-    nome: aluno.name,
-    telefone: formatarTelefone(aluno.phone),
-    ativo: aluno.active,
-  }));
-
-  alunos.sort((a, b) =>
-    a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" })
+  const alunos: (AlunoLista & { criadoEm: string })[] = (data ?? []).map(
+    (aluno) => ({
+      id: aluno.id,
+      nome: aluno.name,
+      telefone: formatarTelefone(aluno.phone),
+      ativo: aluno.active,
+      criadoEm: aluno.created_at,
+    })
   );
 
-  return alunos;
+  if (termo || !filtro.ativos) {
+    alunos.sort((a, b) =>
+      a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" })
+    );
+  } else {
+    alunos.sort(
+      (a, b) =>
+        b.criadoEm.localeCompare(a.criadoEm) ||
+        a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" })
+    );
+  }
+
+  return alunos.map((aluno) => ({
+    id: aluno.id,
+    nome: aluno.nome,
+    telefone: aluno.telefone,
+    ativo: aluno.ativo,
+  }));
 }
 
 export async function contarAlunos() {

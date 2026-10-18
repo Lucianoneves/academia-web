@@ -13,7 +13,6 @@ import { criarAluno } from "../_actions/criar-aluno";
 import {
   dicaPlano,
   escolhasDePlano,
-  NENHUM_PLANO_A_VENDA,
   rotuloEscolha,
   type PlanoEscolha,
 } from "@/lib/plano-escolha";
@@ -111,7 +110,8 @@ export function CadastroAluno({
   const [tocados, setTocados] = useState<Record<string, boolean>>({});
   const escolhas = escolhasDePlano(planos, null);
   const aviso =
-    planosErro ?? (escolhas.length === 0 ? NENHUM_PLANO_A_VENDA : null);
+    planosErro ??
+    (escolhas.length === 0 ? "Não foi possível carregar os planos." : null);
   const parsed = alunoSchema.safeParse(valores);
   const errosCliente: FieldErrors = parsed.success
     ? {}

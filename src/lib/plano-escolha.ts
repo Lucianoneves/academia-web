@@ -45,9 +45,7 @@ const ordem = new Map(
 );
 
 export function escolhasDePlano(planos: PlanoEscolha[], atual: string | null) {
-  const lista = planos.filter(
-    (plano) => planoAVenda(plano) || plano.kind === atual
-  );
+  const lista = [...planos];
 
   if (
     atual &&
@@ -73,8 +71,8 @@ export function escolhasDePlano(planos: PlanoEscolha[], atual: string | null) {
 export function dicaPlano(plano: PlanoEscolha | undefined) {
   if (!plano) return null;
   if (planoAVenda(plano)) {
-    return `Valor do plano: ${formatarReais(plano.precoCentavos)}`;
+    return `Valor do plano: ${formatarReais(plano.precoCentavos)}. A escolha não lança pagamento.`;
   }
 
-  return "Este plano não está à venda. A escolha atual pode ser mantida.";
+  return "A escolha não lança pagamento. Este plano ainda não está à venda.";
 }
