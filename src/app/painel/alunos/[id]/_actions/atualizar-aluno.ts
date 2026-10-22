@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
+import { clienteStripeTeste } from "@/lib/stripe-teste";
 import { createSessionClient } from "@/lib/supabase/server";
 import {
   alunoEdicaoSchema,
@@ -35,7 +36,6 @@ export async function atualizarAluno(
     peso: formData.get("peso"),
     altura: formData.get("altura") ?? "",
     plano: formData.get("plano") ?? "",
-    restricoes: formData.get("restricoes") ?? "",
     email: formData.get("email") ?? "",
   });
 
@@ -44,6 +44,20 @@ export async function atualizarAluno(
   }
 
   const supabase = await createSessionClient();
+  const atual = await supabase
+    .from("students")
+    .select("stripe_customer_id")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (atual.error) {
+    return { success: false, message: FALHA };
+  }
+
+  if (!atual.data) {
+    return { success: false, message: "Aluno não encontrado." };
+  }
+
   const { data, error } = await supabase
     .from("students")
     .update({
@@ -53,7 +67,6 @@ export async function atualizarAluno(
       weight_kg: parsed.data.peso,
       height_cm: parsed.data.altura,
       chosen_plan: parsed.data.plano,
-      medical_restrictions: parsed.data.restricoes,
       email: parsed.data.email,
     })
     .eq("id", id)
@@ -96,6 +109,36 @@ export async function atualizarAluno(
   revalidatePath(`/painel/alunos/${id}`);
   revalidatePath("/painel/pagamentos");
   revalidatePath("/painel/pagamentos/[alunoId]", "page");
+
+  const clienteId = atual.data.stripe_customer_id;
+  if (!clienteId) {
+    return { success: true, message: "Alterações salvas." };
+  }
+
+  const stripe = clienteStripeTeste();
+  if (!stripe) {
+    return {
+      success: true,
+      message: "Alterações salvas.",
+      aviso:
+        "O cliente na Stripe não foi atualizado. Salve de novo para tentar outra vez.",
+    };
+  }
+
+  try {
+    await stripe.customers.update(clienteId, {
+      name: parsed.data.nome,
+      phone: `+55${parsed.data.telefone}`,
+      email: parsed.data.email ?? "",
+    });
+  } catch {
+    return {
+      success: true,
+      message: "Alterações salvas.",
+      aviso:
+        "O cliente na Stripe não foi atualizado. Salve de novo para tentar outra vez.",
+    };
+  }
 
   return { success: true, message: "Alterações salvas." };
 }

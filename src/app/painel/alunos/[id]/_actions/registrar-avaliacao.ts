@@ -7,6 +7,13 @@ import { avaliacaoSchema, fieldErrors, type FormState } from "@/lib/validacao";
 
 const FALHA = "Não foi possível registrar a avaliação. Tente de novo.";
 
+function revalidar(alunoId: string) {
+  revalidatePath("/painel/avaliacoes");
+  revalidatePath(`/painel/alunos/${alunoId}`);
+  revalidatePath("/painel/alunos/[id]", "page");
+  revalidatePath("/painel/agenda");
+}
+
 function idValido(id: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
     id
@@ -73,6 +80,21 @@ export async function registrarAvaliacao(
     };
   }
 
+  const restricoes = await supabase
+    .from("students")
+    .update({ medical_restrictions: parsed.data.observacoes })
+    .eq("id", alunoId)
+    .select("id");
+
+  if (restricoes.error || !restricoes.data?.length) {
+    revalidar(alunoId);
+    return {
+      success: false,
+      message:
+        "Avaliação registrada, mas as restrições não foram atualizadas. Tente de novo.",
+    };
+  }
+
   const limpa = await supabase
     .from("evaluation_appointments")
     .delete()
@@ -84,6 +106,7 @@ export async function registrarAvaliacao(
     limpa.error.code !== "PGRST205" &&
     !limpa.error.message.includes("evaluation_appointments")
   ) {
+    revalidar(alunoId);
     return {
       success: false,
       message:
@@ -91,10 +114,7 @@ export async function registrarAvaliacao(
     };
   }
 
-  revalidatePath("/painel/avaliacoes");
-  revalidatePath(`/painel/alunos/${alunoId}`);
-  revalidatePath("/painel/alunos/[id]", "page");
-  revalidatePath("/painel/agenda");
+  revalidar(alunoId);
 
   return { success: true, message: "Avaliação registrada." };
 }

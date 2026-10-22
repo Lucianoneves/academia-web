@@ -6,9 +6,11 @@ export type FieldErrors = Record<string, string[] | undefined>;
 export type FormState = {
   success: boolean;
   message?: string;
+  aviso?: string;
   errors?: FieldErrors;
   stamp?: number;
   redirect?: string;
+  link?: string;
 };
 
 export function fieldErrors(error: z.ZodError): FieldErrors {
@@ -25,13 +27,23 @@ export function fieldErrors(error: z.ZodError): FieldErrors {
   return errors;
 }
 
+const diaEmSaoPaulo = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Sao_Paulo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+export function diaSaoPaulo(instante: Date) {
+  return diaEmSaoPaulo.format(instante);
+}
+
+export function diaSaoPauloUnix(segundos: number) {
+  return diaSaoPaulo(new Date(segundos * 1000));
+}
+
 export function hojeSaoPaulo() {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Sao_Paulo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+  return diaSaoPaulo(new Date());
 }
 
 const email = z
@@ -190,7 +202,7 @@ const planoOpcional = z
   );
 
 export const alunoEdicaoSchema = alunoSchema
-  .omit({ altura: true, plano: true })
+  .omit({ altura: true, plano: true, restricoes: true })
   .extend({
     altura: alturaOpcional,
     plano: planoOpcional,

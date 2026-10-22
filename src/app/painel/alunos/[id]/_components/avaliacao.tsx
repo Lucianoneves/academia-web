@@ -34,12 +34,14 @@ const inputClass =
 export function AvaliacaoAluno({
   alunoId,
   avaliacao,
+  restricoes,
   erro,
   hoje,
   tentarDeNovo,
 }: {
   alunoId: string;
   avaliacao: AvaliacaoFicha | null;
+  restricoes: string;
   erro: string | null;
   hoje: string;
   tentarDeNovo: string;
@@ -55,7 +57,7 @@ export function AvaliacaoAluno({
   const [marcaPending, startMarca] = useTransition();
   const [limpaPending, startLimpa] = useTransition();
   const [data, setData] = useState(hoje);
-  const [observacoes, setObservacoes] = useState("");
+  const [texto, setTexto] = useState(restricoes);
   const marcacao = avaliacao?.marcacao ?? null;
   const [dia, setDia] = useState(marcacao?.dia ?? hoje);
   const [hora, setHora] = useState(marcacao?.hora ?? "");
@@ -63,9 +65,12 @@ export function AvaliacaoAluno({
   useEffect(() => {
     if (!state.success) return;
     setData(hoje);
-    setObservacoes("");
     router.refresh();
   }, [hoje, router, state]);
+
+  useEffect(() => {
+    setTexto(restricoes);
+  }, [restricoes]);
 
   useEffect(() => {
     setDia(marcacao?.dia ?? hoje);
@@ -126,7 +131,7 @@ export function AvaliacaoAluno({
         className="mt-space-md flex flex-col gap-space-md"
       >
         <h3 className="font-label-lg text-label-lg font-bold text-on-surface">
-          Marcação
+          Próxima marcação
         </h3>
         {marcacao ? (
           <p className="font-body-md text-body-md text-on-surface">
@@ -247,14 +252,17 @@ export function AvaliacaoAluno({
 
       <form
         onSubmit={onSubmit}
-        className="mt-space-md flex flex-col gap-space-md"
+        className="mt-space-xl flex flex-col gap-space-md"
       >
+        <h3 className="font-label-lg text-label-lg font-bold text-on-surface">
+          Registrar avaliação feita
+        </h3>
         <div className="flex flex-col gap-space-xs">
           <label
             className="font-label-md text-label-md font-semibold text-on-surface-variant uppercase"
             htmlFor="avaliacao-data"
           >
-            Data da avaliação
+            Data
           </label>
           <input
             id="avaliacao-data"
@@ -276,16 +284,16 @@ export function AvaliacaoAluno({
         <div className="flex flex-col gap-space-xs">
           <label
             className="font-label-md text-label-md font-semibold text-on-surface-variant uppercase"
-            htmlFor="avaliacao-observacoes"
+            htmlFor="avaliacao-restricoes"
           >
-            Observações
+            Restrições
           </label>
           <textarea
-            id="avaliacao-observacoes"
+            id="avaliacao-restricoes"
             name="observacoes"
             rows={3}
-            value={observacoes}
-            onChange={(event) => setObservacoes(event.target.value)}
+            value={texto}
+            onChange={(event) => setTexto(event.target.value)}
             className="w-full resize-none rounded-lg bg-surface-container p-space-md font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:bg-surface-container-high focus:outline-none"
           />
         </div>
@@ -329,7 +337,7 @@ export function AvaliacaoAluno({
                 {registro.quando} · válida até {registro.validade}
               </span>
               <span className="font-body-sm text-body-sm text-on-surface-variant">
-                {registro.observacoes ?? "Sem observações."}
+                {registro.observacoes ?? "Sem restrições."}
               </span>
             </li>
           ))}

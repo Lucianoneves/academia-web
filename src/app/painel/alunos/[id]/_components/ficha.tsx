@@ -122,7 +122,6 @@ export function FichaAluno({
     peso: String(aluno.peso),
     altura: aluno.altura === null ? "" : formatarAltura(aluno.altura),
     plano: aluno.plano ?? "",
-    restricoes: aluno.restricoes ?? "",
   };
   const [valores, setValores] = useState(iniciais);
   const [tocados, setTocados] = useState<Record<string, boolean>>({});
@@ -150,7 +149,6 @@ export function FichaAluno({
       peso: String(data.get("peso") ?? ""),
       altura: String(data.get("altura") ?? ""),
       plano: String(data.get("plano") ?? ""),
-      restricoes: String(data.get("restricoes") ?? ""),
     });
   }
 
@@ -171,7 +169,6 @@ export function FichaAluno({
       peso: String(data.get("peso") ?? ""),
       altura: String(data.get("altura") ?? ""),
       plano: String(data.get("plano") ?? ""),
-      restricoes: String(data.get("restricoes") ?? ""),
     };
     setValores(lido);
     if (!alunoEdicaoSchema.safeParse(lido).success) {
@@ -231,8 +228,9 @@ export function FichaAluno({
             Dados cadastrais e físicos
           </h2>
           <p className="font-body-md text-body-md text-on-surface-variant">
-            Altura e plano vazios continuam como não informado. Restrições em
-            branco contam como nenhuma. E-mail vazio não aparece como dado.
+            Altura e plano vazios continuam como não informado. As restrições
+            médicas mostradas aqui mudam ao registrar uma avaliação. E-mail
+            vazio não aparece como dado.
           </p>
         </div>
 
@@ -246,6 +244,14 @@ export function FichaAluno({
             role="status"
           >
             {state.message}
+          </p>
+        ) : null}
+        {state.aviso ? (
+          <p
+            className="rounded-lg bg-tertiary-fixed/15 px-space-md py-space-sm font-body-md text-body-md text-tertiary-fixed-dim"
+            role="status"
+          >
+            {state.aviso}
           </p>
         ) : null}
 
@@ -377,21 +383,14 @@ export function FichaAluno({
             </select>
           </Campo>
           <div className="flex flex-col gap-space-xs md:col-span-2 lg:col-span-4">
-            <label
-              className="font-label-md text-label-md font-semibold text-error uppercase"
-              htmlFor="restricoes"
-            >
+            <p className="font-label-md text-label-md font-semibold text-error uppercase">
               Restrições médicas
-            </label>
-            <textarea
-              id="restricoes"
-              name="restricoes"
-              rows={3}
-              defaultValue={aluno.restricoes ?? ""}
-              placeholder="Nenhuma"
-              className="w-full resize-none rounded-lg bg-surface-container p-space-md font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:bg-surface-container-high focus:outline-none"
-            />
-            {aluno.restricoes ? null : (
+            </p>
+            {aluno.restricoes ? (
+              <p className="font-body-md text-body-md whitespace-pre-wrap text-on-surface">
+                {aluno.restricoes}
+              </p>
+            ) : (
               <p className="font-body-sm text-body-sm text-on-surface-variant">
                 Nenhuma restrição informada.
               </p>
@@ -514,6 +513,7 @@ export function FichaAluno({
         <AvaliacaoAluno
           alunoId={aluno.id}
           avaliacao={avaliacao}
+          restricoes={aluno.restricoes ?? ""}
           erro={avaliacaoErro}
           hoje={hoje}
           tentarDeNovo={tentarDeNovo}
