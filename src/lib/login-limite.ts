@@ -68,3 +68,8 @@ export function loginLimparTentativas(ip: string, email: string) {
   porIp.delete(ip);
   porEmail.delete(email);
 }
+
+export function loginReiniciarContadores() {
+  porIp.clear();
+  porEmail.clear();
+}

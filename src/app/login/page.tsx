@@ -18,7 +18,7 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
   );
 }
 
-async function LoginConteudo({
+export async function LoginConteudo({
   searchParams,
 }: {
   searchParams: Promise<{ aviso?: string }>;

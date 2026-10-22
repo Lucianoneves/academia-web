@@ -48,6 +48,7 @@ export async function entrar(
   const userId = userData.user?.id;
 
   if (!userId) {
+    await supabase.auth.signOut();
     loginRegistrarFalha(ip, email);
     return { success: false, message: RECUSA };
   }
