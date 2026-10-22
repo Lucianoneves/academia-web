@@ -57,7 +57,6 @@ const menu: ItemMenu[] = [
     href: "/painel/agenda",
     area: "agenda",
   },
-  { label: "Próximas Aulas", icon: "event_available", href: "/painel#aulas" },
   {
     label: "Avaliações Médicas",
     icon: "cardiology",
