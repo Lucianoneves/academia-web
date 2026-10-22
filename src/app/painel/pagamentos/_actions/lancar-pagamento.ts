@@ -4,12 +4,14 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createSessionClient } from "@/lib/supabase/server";
 import {
+  diaSaoPauloUnix,
   fieldErrors,
   hojeSaoPaulo,
   lancamentoSchema,
   type FormState,
 } from "@/lib/validacao";
 import { aulaJaComecou } from "@/lib/agenda";
+import { reembolsoDaCobranca } from "@/lib/stripe-reembolso";
 import { clienteStripeTeste } from "@/lib/stripe-teste";
 
 const FALHA = "Não foi possível salvar o pagamento. Tente de novo.";
@@ -39,6 +41,10 @@ function mensagemBanco(texto: string) {
 
   if (mensagem.includes("sem preço") || mensagem.includes("plano inativo")) {
     return "Esse plano não está à venda.";
+  }
+
+  if (mensagem.includes("estorno") && mensagem.includes("futura")) {
+    return "A data do estorno não pode ser futura.";
   }
 
   if (mensagem.includes("futura")) {
@@ -217,6 +223,7 @@ export async function estornarPagamento(id: string): Promise<FormState> {
   }
 
   let reembolsoId: string | null = null;
+  let pagoEm = hojeSaoPaulo();
 
   if (origem.data.method === "cartao") {
     const stripe = clienteStripeTeste();
@@ -229,14 +236,20 @@ export async function estornarPagamento(id: string): Promise<FormState> {
     }
 
     try {
-      const reembolso = await stripe.refunds.create({ payment_intent: intent });
-      reembolsoId = reembolso.id;
+      const criado = await stripe.refunds.create({ payment_intent: intent });
+      reembolsoId = criado.id;
+      pagoEm = diaSaoPauloUnix(criado.created);
     } catch {
-      const lista = await stripe.refunds.list({
-        payment_intent: intent,
-        limit: 1,
-      });
-      reembolsoId = lista.data[0]?.id ?? null;
+      try {
+        const jaCriado = await reembolsoDaCobranca(stripe, intent);
+        reembolsoId = jaCriado?.id ?? null;
+        if (jaCriado) pagoEm = diaSaoPauloUnix(jaCriado.created);
+      } catch {
+        return {
+          success: false,
+          message: "Não foi possível reembolsar esta cobrança no cartão.",
+        };
+      }
     }
 
     if (!reembolsoId) {
@@ -251,7 +264,7 @@ export async function estornarPagamento(id: string): Promise<FormState> {
     student_id: origem.data.student_id,
     plan_id: origem.data.plan_id,
     amount_cents: origem.data.amount_cents,
-    paid_on: hojeSaoPaulo(),
+    paid_on: pagoEm,
     method: origem.data.method === "cartao" ? "cartao" : "dinheiro",
     kind: "estorno",
     reverses_payment_id: origem.data.id,

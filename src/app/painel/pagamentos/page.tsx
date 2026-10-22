@@ -6,6 +6,7 @@ import type { SituacaoPagamento } from "@/lib/pagamento-situacao";
 import { CarregandoAcesso } from "@/components/acesso/carregando-acesso";
 import { PainelShell } from "@/components/painel/painel-shell";
 import { FormularioLancamento } from "./_components/lancamento";
+import { FormularioLinkCartao } from "./_components/link-cartao";
 import { listarPagamentos } from "./_data-access/pagamentos";
 
 export const metadata: Metadata = {
@@ -115,6 +116,16 @@ async function Pagamentos({
                 Lançar pagamento
               </h2>
               <FormularioLancamento
+                opcoes={resultado.opcoes}
+                alunoInicial={params.aluno ?? ""}
+              />
+            </section>
+
+            <section className="flex flex-col gap-space-md rounded-xl bg-surface-container-low p-space-lg">
+              <h2 className="font-headline-sm text-headline-sm font-bold text-on-surface">
+                Link de cartão
+              </h2>
+              <FormularioLinkCartao
                 opcoes={resultado.opcoes}
                 alunoInicial={params.aluno ?? ""}
               />

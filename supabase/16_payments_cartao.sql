@@ -160,8 +160,12 @@ begin
     raise exception 'estorno precisa de um recebimento de origem';
   end if;
 
-  if new.paid_on is distinct from v_today then
+  if new.method = 'dinheiro' and new.paid_on is distinct from v_today then
     raise exception 'data do estorno é a data de hoje';
+  end if;
+
+  if new.method = 'cartao' and new.paid_on > v_today then
+    raise exception 'data do estorno não pode ser futura';
   end if;
 
   perform pg_catalog.pg_advisory_xact_lock(
