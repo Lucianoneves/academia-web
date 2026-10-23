@@ -37,10 +37,11 @@ export async function iniciarCheckout(
 ): Promise<FormState> {
   await requireAdmin();
 
-  const stripe = clienteStripeTeste();
-  if (!stripe) {
+  const stripeDisponivel = clienteStripeTeste();
+  if (!stripeDisponivel) {
     return { success: false, message: avisoCartaoTeste() };
   }
+  const stripe = stripeDisponivel;
 
   const alunoId = String(formData.get("aluno") ?? "");
   const planoId = String(formData.get("plano") ?? "");
