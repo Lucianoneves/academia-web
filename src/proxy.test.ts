@@ -39,6 +39,15 @@ describe("proxy do painel", () => {
     expect(from).not.toHaveBeenCalled();
   });
 
+  it("mantém a raiz no login mesmo quando já existe sessão", async () => {
+    getUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
+
+    const resposta = await proxy(pedido("/"));
+
+    expect(resposta.status).toBe(200);
+    expect(resposta.headers.get("location")).toBeNull();
+  });
+
   it("deixa passar usuário autenticado sem consultar administrators", async () => {
     getUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
 

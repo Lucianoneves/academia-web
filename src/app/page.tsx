@@ -1,14 +1,31 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { redirect, unstable_rethrow } from "next/navigation";
+import { unstable_rethrow } from "next/navigation";
+import { LoginAdministrador } from "@/components/acesso/login-administrador";
 import { CadastroAdministrador } from "@/components/acesso/cadastro-administrador";
 import { CarregandoAcesso } from "@/components/acesso/carregando-acesso";
 import { administradorExiste } from "@/lib/auth";
 
-export const metadata: Metadata = {
-  title: "APEX.FIT — Cadastro do administrador",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  await connection();
+
+  try {
+    if (await administradorExiste()) {
+      return {
+        title: "APEX.FIT — Login do administrador",
+        description: "Login do administrador da academia",
+      };
+    }
+  } catch {
+    // Sem a consulta, a página segue para o cadastro.
+  }
+
+  return {
+    title: "APEX.FIT — Cadastro do administrador",
+    description: "Cadastro do administrador da academia",
+  };
+}
 
 export default function Home() {
   return (
@@ -23,7 +40,11 @@ async function Entrada() {
 
   try {
     if (await administradorExiste()) {
-      redirect("/login");
+      return (
+        <main className="flex min-h-screen w-full flex-col items-center justify-center bg-surface px-gutter py-space-xl">
+          <LoginAdministrador mostrarCadastro={false} />
+        </main>
+      );
     }
   } catch (error) {
     unstable_rethrow(error);
