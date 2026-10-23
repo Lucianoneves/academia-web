@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { requireAdmin } from "@/lib/auth";
+import { voltaDoHistorico } from "@/lib/resumo-financeiro";
+import { hojeSaoPaulo } from "@/lib/validacao";
 import { CarregandoAcesso } from "@/components/acesso/carregando-acesso";
 import { HistoricoPagamento } from "@/components/painel/historico-pagamento";
 import { PainelShell } from "@/components/painel/painel-shell";
@@ -17,7 +19,7 @@ export default function PagamentoAlunoPage({
   searchParams,
 }: {
   params: Promise<{ alunoId: string }>;
-  searchParams: Promise<{ checkout?: string }>;
+  searchParams: Promise<{ checkout?: string; de?: string; mes?: string }>;
 }) {
   return (
     <Suspense fallback={<CarregandoAcesso titulo="Abrindo o pagamento" />}>
@@ -31,24 +33,34 @@ async function PagamentoAluno({
   searchParams,
 }: {
   params: Promise<{ alunoId: string }>;
-  searchParams: Promise<{ checkout?: string }>;
+  searchParams: Promise<{ checkout?: string; de?: string; mes?: string }>;
 }) {
   const admin = await requireAdmin();
   const { alunoId } = await params;
-  const { checkout } = await searchParams;
+  const { checkout, de, mes } = await searchParams;
+  const volta = voltaDoHistorico(de, mes, hojeSaoPaulo());
   const resultado = await pagamentoDoAluno(alunoId);
+  const consulta = new URLSearchParams();
+  if (de === "financeiro") {
+    consulta.set("de", "financeiro");
+    if (mes) consulta.set("mes", mes);
+  }
+  const texto = consulta.toString();
+  const tentarDeNovo = texto
+    ? `/painel/pagamentos/${alunoId}?${texto}`
+    : `/painel/pagamentos/${alunoId}`;
 
   if (!resultado.ok && resultado.motivo === "ausente") notFound();
 
   return (
-    <PainelShell adminName={admin.name} area="pagamentos">
+    <PainelShell adminName={admin.name} area={volta.area}>
       <div className="flex w-full flex-col gap-space-lg p-space-lg">
         <div className="flex flex-col gap-space-sm">
           <Link
-            href="/painel/pagamentos"
+            href={volta.href}
             className="font-label-md text-label-md text-primary-fixed"
           >
-            Voltar para pagamentos
+            {volta.rotulo}
           </Link>
           <h1 className="font-headline-lg text-headline-lg tracking-tight text-on-surface">
             {resultado.ok ? resultado.nome : "Pagamento"}
@@ -81,7 +93,7 @@ async function PagamentoAluno({
           alunoId={alunoId}
           ativo={resultado.ok ? resultado.ativo : false}
           pagamento={resultado.ok ? resultado.pagamento : null}
-          tentarDeNovo={`/painel/pagamentos/${alunoId}`}
+          tentarDeNovo={tentarDeNovo}
         />
       </div>
     </PainelShell>

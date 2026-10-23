@@ -8,6 +8,7 @@ export type AreaPainel =
   | "lista"
   | "planos"
   | "pagamentos"
+  | "financeiro"
   | "horarios"
   | "agenda"
   | "avaliacoes";
@@ -66,7 +67,8 @@ const menu: ItemMenu[] = [
   {
     label: "Resumo Financeiro",
     icon: "query_stats",
-    href: "/painel#financeiro",
+    href: "/painel/financeiro",
+    area: "financeiro",
   },
 ];
 
