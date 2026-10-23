@@ -5,19 +5,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
 import { act, ReactNode } from "react";
 
-const { getCurrentAdmin, administradorExiste } = vi.hoisted(() => ({
-  getCurrentAdmin: vi.fn(),
+const { administradorExiste } = vi.hoisted(() => ({
   administradorExiste: vi.fn(),
 }));
 
 vi.mock("next/server", () => ({
   connection: async () => {},
-}));
-
-vi.mock("next/navigation", () => ({
-  redirect: (url: string) => {
-    throw new Error(`NEXT_REDIRECT:${url}`);
-  },
 }));
 
 vi.mock("next/link", () => ({
@@ -32,7 +25,6 @@ vi.mock("@/components/progresso-navegacao", () => ({
 }));
 
 vi.mock("@/lib/auth", () => ({
-  getCurrentAdmin,
   administradorExiste,
 }));
 
@@ -54,9 +46,7 @@ async function mostrar() {
 }
 
 beforeEach(() => {
-  getCurrentAdmin.mockReset();
   administradorExiste.mockReset();
-  getCurrentAdmin.mockResolvedValue(null);
   administradorExiste.mockResolvedValue(true);
 });
 
@@ -68,12 +58,11 @@ afterEach(() => {
 });
 
 describe("página de login", () => {
-  it("redireciona o administrador já autenticado ao painel", async () => {
-    getCurrentAdmin.mockResolvedValue({ id: "adm-1", name: "Ana" });
+  it("mostra o formulário de entrada antes do painel", async () => {
+    await mostrar();
 
-    await expect(mostrar()).rejects.toThrow("NEXT_REDIRECT:/painel");
-    expect(administradorExiste).not.toHaveBeenCalled();
-    expect(document.body.textContent).not.toContain("ENTRAR NO SISTEMA");
+    expect(container?.textContent).toContain("ENTRAR NO SISTEMA");
+    expect(container?.textContent).toContain("Login do Administrador");
   });
 
   it("mostra o cadastro quando ainda não existe administrador", async () => {

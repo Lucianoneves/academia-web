@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { redirect } from "next/navigation";
 import { CarregandoAcesso } from "@/components/acesso/carregando-acesso";
 import { LoginAdministrador } from "@/components/acesso/login-administrador";
-import { administradorExiste, getCurrentAdmin } from "@/lib/auth";
+import { administradorExiste } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "APEX.FIT — Login do administrador",
@@ -24,9 +23,6 @@ export async function LoginConteudo({
   searchParams: Promise<{ aviso?: string }>;
 }) {
   await connection();
-  const admin = await getCurrentAdmin();
-  if (admin) redirect("/painel");
-
   const params = await searchParams;
   let mostrarCadastro = false;
 
