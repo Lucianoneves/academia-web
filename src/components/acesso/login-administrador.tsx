@@ -13,12 +13,24 @@ const avisos: Record<string, string> = {
   entrar: "Sua conta foi criada. Entre com e-mail e senha.",
 };
 
+function iniciais(nome: string) {
+  const partes = nome.trim().split(/\s+/).filter(Boolean);
+  if (partes.length === 0) return "";
+  if (partes.length === 1)
+    return partes[0].slice(0, 2).toLocaleUpperCase("pt-BR");
+  const primeira = partes[0][0] ?? "";
+  const ultima = partes[partes.length - 1][0] ?? "";
+  return `${primeira}${ultima}`.toLocaleUpperCase("pt-BR");
+}
+
 export function LoginAdministrador({
   aviso,
   mostrarCadastro,
+  administrador,
 }: {
   aviso?: string;
   mostrarCadastro: boolean;
+  administrador?: { nome: string; email: string } | null;
 }) {
   const [state, action] = useActionState(entrar, initialState);
   const [pending, startTransition] = useTransition();
@@ -38,21 +50,21 @@ export function LoginAdministrador({
     <div className="relative flex w-full flex-col items-center justify-center px-gutter py-space-xl">
       <div className="pointer-events-none absolute -top-24 h-[480px] w-[480px] rounded-full bg-primary-fixed/5 blur-3xl select-none" />
       <div className="relative z-10 flex w-full max-w-[480px] flex-col gap-space-md">
-        {sessionVisible ? (
+        {sessionVisible && administrador ? (
           <div className="flex w-full items-center justify-between rounded-xl bg-surface-container-low p-space-sm shadow-md">
             <div className="flex min-w-0 items-center gap-space-sm">
               <div className="relative shrink-0">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container-highest font-headline-sm text-headline-sm text-primary-fixed">
-                  CE
+                  {iniciais(administrador.nome)}
                 </div>
                 <span className="absolute right-0 bottom-0 h-2 w-2 rounded-full bg-secondary-fixed ring-2 ring-surface-container-low" />
               </div>
               <div className="flex min-w-0 flex-col">
                 <span className="truncate font-headline-sm text-headline-sm text-on-surface">
-                  Carlos Eduardo
+                  {administrador.nome}
                 </span>
                 <span className="truncate font-body-sm text-body-sm text-on-surface-variant">
-                  carlos.oliveira@fitadmin.com.br
+                  {administrador.email}
                 </span>
               </div>
             </div>

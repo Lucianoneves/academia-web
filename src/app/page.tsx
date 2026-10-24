@@ -5,7 +5,7 @@ import { unstable_rethrow } from "next/navigation";
 import { LoginAdministrador } from "@/components/acesso/login-administrador";
 import { CadastroAdministrador } from "@/components/acesso/cadastro-administrador";
 import { CarregandoAcesso } from "@/components/acesso/carregando-acesso";
-import { administradorExiste } from "@/lib/auth";
+import { administradorDaEntrada, administradorExiste } from "@/lib/auth";
 
 export async function generateMetadata(): Promise<Metadata> {
   await connection();
@@ -40,9 +40,19 @@ async function Entrada() {
 
   try {
     if (await administradorExiste()) {
+      let administrador: { nome: string; email: string } | null = null;
+      try {
+        administrador = await administradorDaEntrada();
+      } catch {
+        administrador = null;
+      }
+
       return (
         <main className="flex min-h-screen w-full flex-col items-center justify-center bg-surface px-gutter py-space-xl">
-          <LoginAdministrador mostrarCadastro={false} />
+          <LoginAdministrador
+            mostrarCadastro={false}
+            administrador={administrador}
+          />
         </main>
       );
     }

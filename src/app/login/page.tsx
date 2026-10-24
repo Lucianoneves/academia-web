@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { CarregandoAcesso } from "@/components/acesso/carregando-acesso";
 import { LoginAdministrador } from "@/components/acesso/login-administrador";
-import { administradorExiste } from "@/lib/auth";
+import { administradorDaEntrada, administradorExiste } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "APEX.FIT — Login do administrador",
@@ -25,6 +25,7 @@ export async function LoginConteudo({
   await connection();
   const params = await searchParams;
   let mostrarCadastro = false;
+  let administrador: { nome: string; email: string } | null = null;
 
   try {
     mostrarCadastro = !(await administradorExiste());
@@ -32,11 +33,20 @@ export async function LoginConteudo({
     mostrarCadastro = false;
   }
 
+  if (!mostrarCadastro) {
+    try {
+      administrador = await administradorDaEntrada();
+    } catch {
+      administrador = null;
+    }
+  }
+
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-surface px-gutter py-space-xl">
       <LoginAdministrador
         aviso={params.aviso}
         mostrarCadastro={mostrarCadastro}
+        administrador={administrador}
       />
     </main>
   );

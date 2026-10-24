@@ -5,8 +5,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
 import { act, ReactNode } from "react";
 
-const { administradorExiste } = vi.hoisted(() => ({
+const { administradorExiste, administradorDaEntrada } = vi.hoisted(() => ({
   administradorExiste: vi.fn(),
+  administradorDaEntrada: vi.fn(),
 }));
 
 vi.mock("next/server", () => ({
@@ -26,6 +27,7 @@ vi.mock("@/components/progresso-navegacao", () => ({
 
 vi.mock("@/lib/auth", () => ({
   administradorExiste,
+  administradorDaEntrada,
 }));
 
 import { LoginConteudo } from "./page";
@@ -48,6 +50,11 @@ async function mostrar() {
 beforeEach(() => {
   administradorExiste.mockReset();
   administradorExiste.mockResolvedValue(true);
+  administradorDaEntrada.mockReset();
+  administradorDaEntrada.mockResolvedValue({
+    nome: "Ana Souza",
+    email: "ana@academia.com",
+  });
 });
 
 afterEach(() => {
@@ -63,6 +70,10 @@ describe("página de login", () => {
 
     expect(container?.textContent).toContain("ENTRAR NO SISTEMA");
     expect(container?.textContent).toContain("Login do Administrador");
+    expect(container?.textContent).toContain("Ana Souza");
+    expect(container?.textContent).toContain("ana@academia.com");
+    expect(container?.textContent).toContain("AS");
+    expect(container?.textContent).not.toContain("Carlos Eduardo");
   });
 
   it("mostra o cadastro quando ainda não existe administrador", async () => {
@@ -72,6 +83,8 @@ describe("página de login", () => {
 
     const link = container?.querySelector('a[href="/"]');
     expect(link?.textContent).toBe("Fazer Cadastro");
+    expect(administradorDaEntrada).not.toHaveBeenCalled();
+    expect(container?.textContent).not.toContain("Ana Souza");
   });
 
   it("continua no login sem o link quando a consulta do cadastro falha", async () => {
